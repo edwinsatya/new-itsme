@@ -1,0 +1,200 @@
+@import url("https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@300;400;500;600;700&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0a0a0a;
+  --foreground: #0073ff;
+  --secondary: #ffffff;
+  --accent: #333333;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: "Source Code Pro", monospace;
+  overflow-x: hidden;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #0073ff;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00cc35;
+}
+
+/* Typing animation */
+@keyframes typing {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes blink-caret {
+  from,
+  to {
+    border-color: transparent;
+  }
+  50% {
+    border-color: #0073ff;
+  }
+}
+
+/* Enhanced typewriter cursor */
+@keyframes blink-cursor {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.typing-cursor {
+  animation: blink-cursor 1s infinite;
+}
+
+/* Typewriter effect for hero */
+.typewriter-hero {
+  border-right: 2px solid #0073ff;
+  animation: blink-caret 0.75s step-end infinite;
+}
+
+/* Running text animation */
+@keyframes runningText {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes infiniteScroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.running-text-container {
+  overflow: hidden;
+  position: relative;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.running-text {
+  display: inline-block;
+  animation: runningText 8s linear infinite;
+  padding-left: 100%;
+}
+
+.infinite-scroll {
+  display: inline-block;
+  animation: infiniteScroll 15s linear infinite;
+  white-space: nowrap;
+}
+
+/* Matrix-style running text */
+.matrix-runner {
+  display: inline-block;
+  animation: matrixRun 12s linear infinite;
+  white-space: nowrap;
+}
+
+@keyframes matrixRun {
+  0% {
+    transform: translateX(100vw);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-100vw);
+    opacity: 0;
+  }
+}
+
+.typewriter {
+  overflow: hidden;
+  border-right: 2px solid #0073ff;
+  white-space: nowrap;
+  margin: 0 auto;
+  animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+}
+
+/* Code-like styling */
+.code-bracket {
+  color: #0073ff;
+  font-weight: 600;
+}
+
+.code-comment {
+  color: #666;
+}
+
+.code-string {
+  color: #ffd700;
+}
+
+/* Hover effects */
+.hover-glow:hover {
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+  border-color: #0073ff;
+  transition: all 0.3s ease;
+}
+
+/* Terminal-like button */
+.terminal-button {
+  background: transparent;
+  border: 2px solid #0073ff;
+  color: #0073ff;
+  padding: 12px 24px;
+  font-family: "Source Code Pro", monospace;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  min-width: 200px;
+}
+
+.terminal-button:hover {
+  background: #0073ff;
+  color: #0a0a0a;
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+}

@@ -1,0 +1,7 @@
+<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="#0a0a0a"/>
+  <polygon points="200,100 160,140 160,160 200,200 240,160 240,140" fill="none" stroke="#00ff41" stroke-width="2"/>
+  <polygon points="200,120 180,140 180,150 200,170 220,150 220,140" fill="#00ff41" opacity="0.6"/>
+  <text x="200" y="240" font-family="monospace" font-size="16" fill="#00ff41" text-anchor="middle">Blockchain</text>
+  <text x="200" y="260" font-family="monospace" font-size="12" fill="#666" text-anchor="middle">Web3 Application</text>
+</svg>
