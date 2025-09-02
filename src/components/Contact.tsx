@@ -1,6 +1,6 @@
 "use client";
 
-import { Facebook, Instagram, Send, Twitter } from "lucide-react";
+import { DynamicIcon } from 'lucide-react/dynamic';
 import { useState } from "react";
 
 const Contact = () => {
@@ -105,7 +105,7 @@ const Contact = () => {
               {/* Submit Button */}
               <button type="submit" className="terminal-button w-full flex items-center justify-center space-x-2">
                 <span>send</span>
-                <Send size={16} />
+                <DynamicIcon name="send" size={16} />
               </button>
             </form>
           </div>
@@ -159,23 +159,23 @@ const Contact = () => {
                 <a
                   href="#"
                   className="flex items-center justify-center w-12 h-12 bg-green-400/10 border border-green-400/30 rounded-full text-green-400 hover:bg-green-400 hover:text-black transition-all duration-300"
-                  title="Facebook"
+                  title="Github"
                 >
-                  <Facebook size={20} />
+                  <DynamicIcon name="github" size={20} />
+                </a>
+                <a
+                  href="#"
+                  className="flex items-center justify-center w-12 h-12 bg-green-400/10 border border-green-400/30 rounded-full text-green-400 hover:bg-green-400 hover:text-black transition-all duration-300"
+                  title="LinkedIn"
+                >
+                  <DynamicIcon name="linkedin" size={20} />
                 </a>
                 <a
                   href="#"
                   className="flex items-center justify-center w-12 h-12 bg-green-400/10 border border-green-400/30 rounded-full text-green-400 hover:bg-green-400 hover:text-black transition-all duration-300"
                   title="Instagram"
                 >
-                  <Instagram size={20} />
-                </a>
-                <a
-                  href="#"
-                  className="flex items-center justify-center w-12 h-12 bg-green-400/10 border border-green-400/30 rounded-full text-green-400 hover:bg-green-400 hover:text-black transition-all duration-300"
-                  title="Twitter"
-                >
-                  <Twitter size={20} />
+                  <DynamicIcon name="instagram" size={20} />
                 </a>
               </div>
             </div>
@@ -187,7 +187,7 @@ const Contact = () => {
                 <span className="text-green-400 font-mono text-sm">status: online</span>
               </div>
               <p className="text-gray-300 font-mono text-sm">
-                Average response time: <span className="text-green-400">{"< 24 hours"}</span>
+                Average response time: <span className="text-blue-400">{"< 24 hours"}</span>
               </p>
             </div>
           </div>
