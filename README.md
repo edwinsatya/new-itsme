@@ -99,14 +99,14 @@ The website is fully responsive with:
 
 ## 🚀 Deployment
 
-### Vercel (Recommended)
+### Vercel
 
 \`\`\`bash
 npm run build
 
 # Deploy to Vercel
 
-\`\`\`
+https://its-me.touchsimpledev.com/ or https://vercel.com/edwinsatyas-projects/new-itsme/2WGzTyzcQkxMj8BK8AveBxCo1GRt
 
 ### Static Export
 
