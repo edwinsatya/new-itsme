@@ -1,69 +1,11 @@
 "use client";
 
-import { ExternalLink, Github } from "lucide-react";
+import { projects } from "@/constants/projects";
+import { ExternalLink } from "lucide-react";
+import { DynamicIcon } from 'lucide-react/dynamic';
 import Image from "next/image";
 
 const Portfolio = () => {
-  const projects = [
-    {
-      id: 1,
-      title: "jane blogger",
-      description:
-        "//...website design & lorem ipsum dolor sit amet, consectetur adipiscing elit; ut elit tellus, luctus nec ullamcorper mattis;",
-      tech: ["React", "CSS3", "WordPress"],
-      image: "/project1.svg",
-      github: "#",
-      live: "#",
-    },
-    {
-      id: 2,
-      title: "patisserie",
-      description: "//...front-end development & lorem ipsum dolor sit amet, consectetur adipiscing elit;",
-      tech: ["Vue.js", "SCSS", "Node.js"],
-      image: "/project2.svg",
-      github: "#",
-      live: "#",
-    },
-    {
-      id: 3,
-      title: "game_studio",
-      description:
-        "//...website design & lorem ipsum dolor sit amet, consectetur adipiscing elit; ut elit tellus, luctus nec ullamcorper mattis;",
-      tech: ["React", "Three.js", "WebGL"],
-      image: "/project3.svg",
-      github: "#",
-      live: "#",
-    },
-    {
-      id: 4,
-      title: "restaurant",
-      description: "//...website design & lorem ipsum dolor sit amet, consectetur adipiscing elit;",
-      tech: ["Next.js", "Tailwind", "Stripe"],
-      image: "/project4.svg",
-      github: "#",
-      live: "#",
-    },
-    {
-      id: 5,
-      title: "aecer fincorp",
-      description: "//...website design & lorem ipsum dolor sit amet, consectetur adipiscing elit;",
-      tech: ["React", "Charts.js", "Firebase"],
-      image: "/project5.svg",
-      github: "#",
-      live: "#",
-    },
-    {
-      id: 6,
-      title: "blockchain",
-      description:
-        "//...website design & lorem ipsum dolor sit amet, consectetur adipiscing elit; ut elit tellus, luctus nec ullamcorper mattis;",
-      tech: ["Web3", "Solidity", "React"],
-      image: "/project6.svg",
-      github: "#",
-      live: "#",
-    },
-  ];
-
   return (
     <section id="portfolio" className="py-20 bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -99,13 +41,15 @@ const Portfolio = () => {
                 {/* Overlay with links */}
                 <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center space-x-4">
                   <a
+                    target="_blank"
                     href={project.github}
                     className="p-3 bg-green-400 text-black rounded-full hover:bg-green-300 transition-colors duration-300"
                     title="View Code"
                   >
-                    <Github size={20} />
+                    <DynamicIcon name="github" size={20} />
                   </a>
                   <a
+                    target="_blank"
                     href={project.live}
                     className="p-3 bg-green-400 text-black rounded-full hover:bg-green-300 transition-colors duration-300"
                     title="Live Demo"

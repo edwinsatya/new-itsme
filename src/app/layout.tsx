@@ -17,8 +17,10 @@ export const metadata: Metadata = {
   description:
     "Full Stack Web Developer specializing in React, Next.js, and modern web technologies. Creating beautiful, functional, and user-centered digital experiences.",
   keywords: "web developer, full stack developer, react, next.js, typescript, portfolio",
-  authors: [{ name: "Samantha" }],
-  viewport: "width=device-width, initial-scale=1",
+  icons: {
+    icon: "/vscode.svg"
+  },
+  authors: [{ name: "Edwin" }]
 };
 
 export default function RootLayout({
