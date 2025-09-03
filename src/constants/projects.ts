@@ -3,7 +3,7 @@ export const projects = [
       id: 1,
       title: "food analyzer",
       description:
-        "web analysis food using ai for checking nutrition",
+        "//... web analysis food using ai for checking nutrition;",
       tech: ["Next.js", "Tailwind.css", "OpenRouter AI", "Cloudinary"],
       image: "/ssproject1.svg",
       github: "https://github.com/edwinsatya/food-analyzer",
@@ -12,7 +12,7 @@ export const projects = [
     {
       id: 2,
       title: "pokedex app",
-      description: "Fun web for caching pokemon using data from pokeapi",
+      description: "//... Fun web xD, you can catch them all. Pokemon lovers must visit this app;",
       tech: ["Next.js", "Tailwind.css", "Graphql"],
       image: "/ssproject2.svg",
       github: "https://github.com/edwinsatya/pokedex",
