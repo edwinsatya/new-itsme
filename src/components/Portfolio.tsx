@@ -30,13 +30,16 @@ const Portfolio = () => {
             >
               {/* Project Image */}
               <div className="relative h-48 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center border-b border-green-500/20 overflow-hidden">
-                <Image
-                  src={project.image}
-                  alt={project.title}
-                  width={400}
-                  height={300}
-                  className="w-full h-full object-cover opacity-80"
-                />
+                {
+                  project.image && 
+                  <Image
+                    src={project.image}
+                    alt={project.title}
+                    width={400}
+                    height={300}
+                    className="w-full h-full object-cover opacity-80"
+                  />
+                }
 
                 {/* Overlay with links */}
                 <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center space-x-4">
