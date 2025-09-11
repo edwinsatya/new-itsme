@@ -157,26 +157,28 @@ const Contact = () => {
 
               <div className="flex space-x-4">
                 <a
-                  href="#"
+                  href="https://github.com/edwinsatya"
+                  target='_blank'
                   className="flex items-center justify-center w-12 h-12 bg-green-400/10 border border-green-400/30 rounded-full text-green-400 hover:bg-green-400 hover:text-black transition-all duration-300"
                   title="Github"
                 >
                   <DynamicIcon name="github" size={20} />
                 </a>
                 <a
-                  href="#"
+                  href="https://www.linkedin.com/in/edwin-satya-yudistira/"
+                  target='_blank'
                   className="flex items-center justify-center w-12 h-12 bg-green-400/10 border border-green-400/30 rounded-full text-green-400 hover:bg-green-400 hover:text-black transition-all duration-300"
                   title="LinkedIn"
                 >
                   <DynamicIcon name="linkedin" size={20} />
                 </a>
-                <a
+                {/* <a
                   href="#"
                   className="flex items-center justify-center w-12 h-12 bg-green-400/10 border border-green-400/30 rounded-full text-green-400 hover:bg-green-400 hover:text-black transition-all duration-300"
                   title="Instagram"
                 >
                   <DynamicIcon name="instagram" size={20} />
-                </a>
+                </a> */}
               </div>
             </div>
 
