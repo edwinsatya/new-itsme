@@ -20,13 +20,13 @@ export const projects = [
     },
     {
       id: 3,
-      title: "coming soon",
+      title: "Tola Web",
       description:
-        "//...not yet upload;",
-      tech: ["React", "Three.js", "WebGL"],
-      image: "",
-      github: "#",
-      live: "#",
+        "//... Landing page for Tola Web, a web development service;",
+      tech: ["Next.js", "Tailwind.css"],
+      image: "/ssproject3.svg",
+      github: "",
+      live: "https://www.tola.solutions/",
     },
     {
       id: 4,

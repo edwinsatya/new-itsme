@@ -46,7 +46,7 @@ const Portfolio = () => {
                   <a
                     target="_blank"
                     href={project.github}
-                    className="p-3 bg-green-400 text-black rounded-full hover:bg-green-300 transition-colors duration-300"
+                    className={`${!project.github && 'pointer-events-none opacity-50'} p-3 bg-green-400 text-black rounded-full hover:bg-green-300 transition-colors duration-300`}
                     title="View Code"
                   >
                     <DynamicIcon name="github" size={20} />
@@ -54,7 +54,7 @@ const Portfolio = () => {
                   <a
                     target="_blank"
                     href={project.live}
-                    className="p-3 bg-green-400 text-black rounded-full hover:bg-green-300 transition-colors duration-300"
+                    className={`${!project.live && 'pointer-events-none opacity-50'} p-3 bg-green-400 text-black rounded-full hover:bg-green-300 transition-colors duration-300`}
                     title="Live Demo"
                   >
                     <ExternalLink size={20} />
