@@ -177,7 +177,7 @@ const Contact = () => {
                   className="flex items-center justify-center w-12 h-12 bg-green-400/10 border border-green-400/30 rounded-full text-green-400 hover:bg-green-400 hover:text-black transition-all duration-300"
                   title="Instagram"
                 >
-                  <DynamicIcon name="instagram" size={20} />
+                  <DynamicIconz name="instagram" size={20} />
                 </a> */}
               </div>
             </div>
