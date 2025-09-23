@@ -11,7 +11,7 @@ const About = () => {
     <section id="about" className="py-20 bg-gray-900">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          {/* Left side - Code block */}
+          {/* Left side Code block */}
           <div className="bg-black border border-green-500/30 rounded-lg p-6 font-mono text-sm">
             <div className="flex items-center justify-between mb-4">
               <div className="flex space-x-2">
@@ -77,7 +77,7 @@ const About = () => {
             </div>
           </div>
 
-          {/* Right side - Content */}
+          {/* Right side Content */}
           <div className="space-y-6">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 font-mono">
