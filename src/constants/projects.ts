@@ -30,12 +30,12 @@ export const projects = [
     },
     {
       id: 4,
-      title: "coming soon",
-      description: "//...not yet upload;",
-      tech: ["Next.js", "Tailwind", "Stripe"],
-      image: "",
-      github: "#",
-      live: "#",
+      title: "MileApp Tasks Management",
+      description: "//... Register, Login and then you can manage your tasks;",
+      tech: ["Nuxt", "Tailwind", "Node.js", "Express", "Mockapi.io"],
+      image: "/ssproject4.svg",
+      github: "https://github.com/edwinsatya/mileapp-client",
+      live: "https://mileapp-tasks.touchsimpledev.com/",
     },
     {
       id: 5,
