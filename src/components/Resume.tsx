@@ -6,6 +6,12 @@ import { certifications } from "@/constants/skills";
 const Resume = () => {
   const experiences = [
     {
+      period: "Nov 2025 - Mar 2026",
+      company: "Tola Solution - Happy Farm Project",
+      position: "Full Stack Developer",
+      description: "Played a key role in the development of the Happy Farm project, contributing to both frontend and backend development to create an engaging and efficient platform for users.",
+    },
+    {
       period: "Jun 2023 - Feb 2025",
       company: "Magloft",
       position: "Full Stack Developer",
