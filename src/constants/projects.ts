@@ -58,6 +58,15 @@ export const projects = [
     },
     {
       id: 7,
+      title: "Magloft.com",
+      description: "//... Landing page for Magloft's digital publishing platform, showcasing their services and features;",
+      tech: ["Next.js", "Tailwind.css"],
+      image: "/ssproject7.svg",
+      github: "",
+      live: "https://magloft.com/",
+    },
+    {
+      id: 8,
       title: "coming soon",
       description:
         "//...not yet upload;",
