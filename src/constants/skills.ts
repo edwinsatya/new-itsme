@@ -4,6 +4,8 @@ export const skills = [
   "TypeScript",
   "Node.js",
   "Vue.js",
+  "Angular.js",
+  "Tailwind CSS",
   "mongoDB",
   "git",
   "postgreSQL",
