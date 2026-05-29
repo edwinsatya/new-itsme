@@ -50,6 +50,17 @@ A modern, responsive developer portfolio website built with Next.js and Tailwind
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+### Contact form
+
+The contact form sends email via [Web3Forms](https://web3forms.com):
+
+1. Sign up at [web3forms.com](https://web3forms.com) with your email.
+2. Copy your access key.
+3. Create `.env.local` from `.env.example` and set `NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY`.
+4. Restart the dev server. On Vercel, add the same variable in project settings.
+
+Submissions run in the browser (Web3Forms free plan does not allow server-side API calls).
+
 ## 🎨 Customization
 
 ### Colors

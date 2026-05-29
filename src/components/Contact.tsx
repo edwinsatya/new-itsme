@@ -3,17 +3,68 @@
 import { DynamicIcon } from 'lucide-react/dynamic';
 import { useState } from "react";
 
+type SubmitStatus = "idle" | "loading" | "success" | "error";
+
+type Web3FormsResponse = {
+  success?: boolean;
+  message?: string;
+  body?: { message?: string };
+};
+
+const accessKey = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY;
+
 const Contact = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     message: "",
   });
+  const [status, setStatus] = useState<SubmitStatus>("idle");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log("Form submitted:", formData);
+    setStatus("loading");
+    setErrorMessage("");
+
+    if (!accessKey) {
+      setStatus("error");
+      setErrorMessage("Contact form is not configured. Set NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY.");
+      return;
+    }
+
+    try {
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          access_key: accessKey,
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          message: formData.message.trim(),
+          subject: `Portfolio contact from ${formData.name.trim()}`,
+          from_name: formData.name.trim(),
+          replyto: formData.email.trim(),
+          botcheck: false,
+        }),
+      });
+
+      const data = (await response.json()) as Web3FormsResponse;
+      const apiMessage = data.body?.message ?? data.message;
+
+      if (!response.ok || !data.success) {
+        throw new Error(apiMessage ?? "Failed to send message.");
+      }
+
+      setStatus("success");
+      setFormData({ name: "", email: "", message: "" });
+    } catch (err) {
+      setStatus("error");
+      setErrorMessage(err instanceof Error ? err.message : "Failed to send message.");
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -51,6 +102,16 @@ const Contact = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Honeypot for spam bots — leave empty */}
+              <input
+                type="checkbox"
+                name="botcheck"
+                tabIndex={-1}
+                autoComplete="off"
+                className="hidden"
+                aria-hidden
+              />
+
               {/* Name Field */}
               <div>
                 <label htmlFor="name" className="block text-green-400 font-mono mb-2">
@@ -102,10 +163,26 @@ const Contact = () => {
                 ></textarea>
               </div>
 
+              {status === "success" && (
+                <p className="text-green-400 font-mono text-sm border border-green-500/30 rounded px-4 py-3 bg-green-400/5">
+                  Message sent. I&apos;ll get back to you soon.
+                </p>
+              )}
+
+              {status === "error" && (
+                <p className="text-red-400 font-mono text-sm border border-red-500/30 rounded px-4 py-3 bg-red-400/5">
+                  {errorMessage}
+                </p>
+              )}
+
               {/* Submit Button */}
-              <button type="submit" className="terminal-button w-full flex items-center justify-center space-x-2">
-                <span>send</span>
-                <DynamicIcon name="send" size={16} />
+              <button
+                type="submit"
+                disabled={status === "loading"}
+                className="terminal-button w-full flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span>{status === "loading" ? "sending..." : "send"}</span>
+                {status !== "loading" && <DynamicIcon name="send" size={16} />}
               </button>
             </form>
           </div>

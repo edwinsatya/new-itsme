@@ -67,6 +67,16 @@ export const projects = [
     },
     {
       id: 8,
+      title: "mini-google",
+      description:
+        "//...mini google search engine with minimal design, you can save news and read later;",
+      tech: ["react", "serper.dev", "context-api"],
+      image: "/ssproject8.svg",
+      github: "https://github.com/edwinsatya/mini-google",
+      live: "https://mini-google.touchsimpledev.site/",
+    },
+    {
+      id: 9,
       title: "coming soon",
       description:
         "//...not yet upload;",
