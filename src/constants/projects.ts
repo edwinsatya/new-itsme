@@ -77,6 +77,16 @@ export const projects = [
     },
     {
       id: 9,
+      title: "bountie-hunter",
+      description:
+        "//...web3 bountie company, you can stacking your token and get more rewards;",
+      tech: ["Next.js", "Tailwind.css", "metamask", "web3"],
+      image: "/ssproject9.svg",
+      github: "",
+      live: "https://bountiehunter.io/",
+    },
+    {
+      id: 10,
       title: "coming soon",
       description:
         "//...not yet upload;",
