@@ -87,12 +87,12 @@ export const projects = [
     },
     {
       id: 10,
-      title: "coming soon",
+      title: "Weathernime",
       description:
-        "//...not yet upload;",
-      tech: ["Web3", "Solidity", "React"],
-      image: "",
-      github: "",
-      live: "",
+        "//...weather forecast web with anime concept, built through vibe coding;",
+      tech: ["Next.js", "Open-Meteo API", "Vibe Coding", "Claude"],
+      image: "/ssproject10.svg",
+      github: "https://github.com/edwinsatya/weathernime",
+      live: "https://weathernime.touchsimpledev.site",
     },
   ];

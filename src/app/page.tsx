@@ -1,4 +1,4 @@
-import Header from "@/components/Header";
+import TheFrame from "@/components/TheFrame";
 import Hero from "@/components/Hero";
 import About from "@/components/About";
 import Portfolio from "@/components/Portfolio";
@@ -6,16 +6,22 @@ import Services from "@/components/Services";
 import Resume from "@/components/Resume";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
-import MatrixRain from "@/components/MatrixRain";
-import LoadingScreen from "@/components/LoadingScreen";
-import ScrollToTop from "@/components/ScrollToTop";
+import Preloader from "@/components/Preloader";
+import SmoothScroll from "@/components/SmoothScroll";
+import Cursor from "@/components/Cursor";
+import ScrollProgress from "@/components/ScrollProgress";
+import ThemeManager from "@/components/ThemeManager";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-black text-white">
-      <LoadingScreen />
-      <MatrixRain />
-      <Header />
+    <main className="min-h-screen">
+      <SmoothScroll />
+      <ThemeManager />
+      <ScrollProgress />
+      <Preloader />
+      <Cursor />
+      <div className="noise-overlay" />
+      <TheFrame />
       <Hero />
       <About />
       <Portfolio />
@@ -23,7 +29,6 @@ export default function Home() {
       <Resume />
       <Contact />
       <Footer />
-      <ScrollToTop />
     </main>
   );
 }

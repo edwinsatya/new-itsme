@@ -1,26 +1,33 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Archivo_Black, Archivo, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const archivoBlack = Archivo_Black({
+  variable: "--font-display",
+  weight: "400",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const archivo = Archivo({
+  variable: "--font-body",
+  subsets: ["latin"],
+});
+
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-mono",
+  weight: ["400", "500"],
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "It's Me - Edwin",
+  title: "Edwin Satya Yudistira — Full Stack Developer",
   description:
     "Full Stack Web Developer specializing in React, Next.js, and modern web technologies. Creating beautiful, functional, and user-centered digital experiences.",
   keywords: "web developer, full stack developer, react, next.js, typescript, portfolio",
   icons: {
-    icon: "/vscode.svg"
+    icon: "/vscode.svg",
   },
-  authors: [{ name: "Edwin" }]
+  authors: [{ name: "Edwin" }],
 };
 
 export default function RootLayout({
@@ -30,7 +37,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
+      <body
+        className={`${archivoBlack.variable} ${archivo.variable} ${plexMono.variable} antialiased`}
+      >
+        {children}
+      </body>
     </html>
   );
 }

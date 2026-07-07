@@ -1,7 +1,17 @@
 "use client";
 
-import { DynamicIcon } from 'lucide-react/dynamic';
 import { useState } from "react";
+import { ArrowUpRight } from "lucide-react";
+import { useRevealScope } from "@/hooks/useRevealScope";
+import {
+  useSectionParallax,
+  SunOutline,
+  Cloud,
+  Waves,
+  Rainbow,
+  CrossMarks,
+  SectionGrid,
+} from "./scenes";
 
 type SubmitStatus = "idle" | "loading" | "success" | "error";
 
@@ -14,6 +24,7 @@ type Web3FormsResponse = {
 const accessKey = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY;
 
 const Contact = () => {
+  const scope = useRevealScope<HTMLElement>();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -74,193 +85,164 @@ const Contact = () => {
     });
   };
 
+  useSectionParallax(scope);
+
   return (
-    <section id="contact" className="py-20 bg-black">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 font-mono">
-            <span className="code-bracket">{"<"}</span>
-            contact_me
-            <span className="code-bracket">{">"}</span>
-          </h2>
-          <p className="text-gray-300 text-lg max-w-2xl mx-auto font-mono">
-            I&apos;m here to help bring your ideas to life. Whether you have a project in mind or just want to say hello, feel free to reach out!
+    <section id="contact" ref={scope} data-theme="aqua" className="section-shell overflow-hidden">
+      {/* Calm-after-the-rain scenery */}
+      <SectionGrid />
+      <SunOutline className="left-[6%] top-[4%] h-56 w-56 text-[#0e4347] opacity-20 md:h-80 md:w-80" speed={-0.26} />
+      <Rainbow className="right-[4%] top-[10%] h-32 w-64 md:h-48 md:w-[28rem]" speed={-0.3} />
+      <Cloud className="right-[2%] top-[26%] h-14 w-52 text-[#efeee8] opacity-70" speed={-0.35} />
+      <Cloud className="right-[30%] top-[16%] h-10 w-36 text-[#efeee8] opacity-50" speed={-0.18} />
+      <CrossMarks className="text-[#0e4347] opacity-25" speed={-0.2} />
+      <Waves className="text-[#0e4347]" />
+
+      <div data-enter className="relative z-10 mx-auto max-w-6xl">
+        <div data-reveal className="mb-10 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-6">
+            <p className="hud-label">005 — Contact</p>
+            <p className="hud-label">WX // Clear after rain — 24°C</p>
+          </div>
+          <p className="hud-label">
+            <span className="mr-1 inline-block h-[6px] w-[6px] animate-pulse bg-[var(--accent)]" />
+            Open for new job / projects
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Contact Form */}
-          <div className="bg-gray-900 border border-green-500/20 rounded-lg p-8">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex space-x-2">
-                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              </div>
-              <span className="text-gray-400 font-mono text-sm">contact_form.js</span>
-            </div>
+        <h2 data-scroll-speed="-0.2" className="font-display mb-20 text-[clamp(2.6rem,8vw,6.5rem)] text-[var(--ink)]">
+          <span className="line-mask md:ml-[10vw]">
+            <span>Join the</span>
+          </span>
+          <span className="line-mask">
+            <span>story. let&apos;s build.</span>
+          </span>
+        </h2>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Honeypot for spam bots — leave empty */}
+        <div className="grid grid-cols-1 gap-16 lg:grid-cols-2">
+          {/* Form */}
+          <form onSubmit={handleSubmit} data-reveal className="space-y-10">
+            <input
+              type="checkbox"
+              name="botcheck"
+              tabIndex={-1}
+              autoComplete="off"
+              className="hidden"
+              aria-hidden
+            />
+
+            <div>
+              <label htmlFor="name" className="hud-label mb-1 !flex">
+                01 — Your name
+              </label>
               <input
-                type="checkbox"
-                name="botcheck"
-                tabIndex={-1}
-                autoComplete="off"
-                className="hidden"
-                aria-hidden
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className="field-kpr"
+                placeholder="John Doe"
+                required
               />
-
-              {/* Name Field */}
-              <div>
-                <label htmlFor="name" className="block text-green-400 font-mono mb-2">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-black border border-green-500/30 rounded text-white font-mono focus:border-green-400 focus:outline-none transition-colors duration-300"
-                  placeholder="Enter your name..."
-                  required
-                />
-              </div>
-
-              {/* Email Field */}
-              <div>
-                <label htmlFor="email" className="block text-green-400 font-mono mb-2">
-                  Email *
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-black border border-green-500/30 rounded text-white font-mono focus:border-green-400 focus:outline-none transition-colors duration-300"
-                  placeholder="your.email@example.com"
-                  required
-                />
-              </div>
-
-              {/* Message Field */}
-              <div>
-                <label htmlFor="message" className="block text-green-400 font-mono mb-2">
-                  _message *
-                </label>
-                <textarea
-                  id="message"
-                  name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  rows={6}
-                  className="w-full px-4 py-3 bg-black border border-green-500/30 rounded text-white font-mono focus:border-green-400 focus:outline-none transition-colors duration-300 resize-vertical"
-                  placeholder="Tell me about your project..."
-                  required
-                ></textarea>
-              </div>
-
-              {status === "success" && (
-                <p className="text-green-400 font-mono text-sm border border-green-500/30 rounded px-4 py-3 bg-green-400/5">
-                  Message sent. I&apos;ll get back to you soon.
-                </p>
-              )}
-
-              {status === "error" && (
-                <p className="text-red-400 font-mono text-sm border border-red-500/30 rounded px-4 py-3 bg-red-400/5">
-                  {errorMessage}
-                </p>
-              )}
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={status === "loading"}
-                className="terminal-button w-full flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <span>{status === "loading" ? "sending..." : "send"}</span>
-                {status !== "loading" && <DynamicIcon name="send" size={16} />}
-              </button>
-            </form>
-          </div>
-
-          {/* Contact Info & Social */}
-          <div className="space-y-8">
-            {/* Contact Details */}
-            <div className="bg-gray-900 border border-green-500/20 rounded-lg p-8">
-              <h3 className="text-2xl font-bold text-white mb-6 font-mono">
-                <span className="code-bracket">{"{ "}</span>
-                get_in_touch
-                <span className="code-bracket">{" }"}</span>
-              </h3>
-
-              <div className="space-y-4 font-mono">
-                <div className="flex items-start space-x-3">
-                  <span className="text-green-400 mt-1">→</span>
-                  <div>
-                    <p className="text-green-400">location:</p>
-                    <p className="text-gray-300">Lumajang, Indonesia</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-3">
-                  <span className="text-green-400 mt-1">→</span>
-                  <div>
-                    <p className="text-green-400">email:</p>
-                    <p className="text-gray-300">edwinsatyayudistira@gmail.com</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-3">
-                  <span className="text-green-400 mt-1">→</span>
-                  <div>
-                    <p className="text-green-400">availability:</p>
-                    <p className="text-gray-300">Open for new Job / Projects</p>
-                  </div>
-                </div>
-              </div>
             </div>
 
-            {/* Social Links */}
-            <div className="bg-gray-900 border border-green-500/20 rounded-lg p-8">
-              <h3 className="text-xl font-bold text-white mb-6 font-mono">
-                <span className="code-bracket">{"["}</span>
-                social_links
-                <span className="code-bracket">{"]"}</span>
-              </h3>
-
-              <div className="flex space-x-4">
-                <a
-                  href="https://github.com/edwinsatya"
-                  target='_blank'
-                  className="flex items-center justify-center w-12 h-12 bg-green-400/10 border border-green-400/30 rounded-full text-green-400 hover:bg-green-400 hover:text-black transition-all duration-300"
-                  title="Github"
-                >
-                  <DynamicIcon name="github" size={20} />
-                </a>
-                <a
-                  href="https://www.linkedin.com/in/edwin-satya-yudistira/"
-                  target='_blank'
-                  className="flex items-center justify-center w-12 h-12 bg-green-400/10 border border-green-400/30 rounded-full text-green-400 hover:bg-green-400 hover:text-black transition-all duration-300"
-                  title="LinkedIn"
-                >
-                  <DynamicIcon name="linkedin" size={20} />
-                </a>
-              </div>
+            <div>
+              <label htmlFor="email" className="hud-label mb-1 !flex">
+                02 — Your email
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="field-kpr"
+                placeholder="john@example.com"
+                required
+              />
             </div>
 
-            {/* Quick Response */}
-            <div className="bg-black border border-green-500/30 rounded-lg p-6">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-green-400 font-mono text-sm">status: online</span>
-              </div>
-              <p className="text-gray-300 font-mono text-sm">
-                Average response time: <span className="text-blue-400">{"< 24 hours"}</span>
+            <div>
+              <label htmlFor="message" className="hud-label mb-1 !flex">
+                03 — Your message
+              </label>
+              <textarea
+                id="message"
+                name="message"
+                value={formData.message}
+                onChange={handleChange}
+                rows={4}
+                className="field-kpr resize-none"
+                placeholder="Tell me about your project..."
+                required
+              />
+            </div>
+
+            {status === "success" && (
+              <p className="border border-[var(--ink)] px-5 py-4 font-mono text-sm text-[var(--ink)]">
+                Message sent. I&apos;ll get back to you soon.
               </p>
+            )}
+
+            {status === "error" && (
+              <p className="border border-[var(--accent)] px-5 py-4 font-mono text-sm text-[var(--accent)]">
+                {errorMessage}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={status === "loading"}
+              className="btn-hud disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {status === "loading" ? "Sending..." : "Send message"}
+              <ArrowUpRight size={16} />
+            </button>
+          </form>
+
+          {/* Info */}
+          <div className="flex flex-col justify-between gap-12">
+            <div data-reveal className="space-y-10">
+              <div>
+                <p className="hud-label mb-3">Email</p>
+                <a
+                  href="mailto:edwinsatyayudistira@gmail.com"
+                  className="link-underline font-display block w-fit break-all text-[clamp(1.1rem,2.2vw,1.8rem)] uppercase text-[var(--ink)]"
+                >
+                  edwinsatyayudistira@gmail.com
+                </a>
+              </div>
+
+              <div>
+                <p className="hud-label mb-3">Location</p>
+                <p className="text-xl text-[var(--ink)]">Lumajang, Indonesia</p>
+              </div>
+
+              <div>
+                <p className="hud-label mb-3">Socials</p>
+                <div className="flex gap-8">
+                  <a
+                    href="https://github.com/edwinsatya"
+                    target="_blank"
+                    className="link-underline flex items-center gap-1 text-lg text-[var(--ink)]"
+                  >
+                    Github <ArrowUpRight size={14} />
+                  </a>
+                  <a
+                    href="https://www.linkedin.com/in/edwin-satya-yudistira/"
+                    target="_blank"
+                    className="link-underline flex items-center gap-1 text-lg text-[var(--ink)]"
+                  >
+                    LinkedIn <ArrowUpRight size={14} />
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div data-reveal className="border border-[var(--line)] p-8">
+              <p className="hud-label">Average response time</p>
+              <p className="font-display mt-2 text-3xl text-[var(--ink)]">{"< 24 hours"}</p>
             </div>
           </div>
         </div>
