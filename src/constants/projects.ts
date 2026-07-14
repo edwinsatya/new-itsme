@@ -23,7 +23,7 @@ export const projects = [
       id: 3,
       title: "pokedex app",
       description: "//... Fun web xD, you can catch them all. Pokemon lovers must visit this app;",
-      tech: ["Next.js", "Tailwind.css", "Graphql"],
+      tech: ["Next.js", "Tailwind.css", "Pokeapi", "Pokewallet"],
       image: "/ssproject3.svg",
       github: "https://github.com/edwinsatya/pokedex",
       live: "https://pokedex.touchsimpledev.site",
