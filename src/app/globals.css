@@ -3,28 +3,19 @@
 @tailwind utilities;
 
 /*
- * KPR-style theme system: the page background/ink morph per section.
- * --bg / --ink / --accent are animated by ThemeManager via GSAP;
- * every color in the UI derives from them.
+ * SHOUNEN SAGA design system.
+ * Print-manga palette: warm paper, dense ink, one blood-red accent.
+ * Sections alternate paper/ink like flipped pages; energy comes from
+ * hard edges, halftone texture and impact-frame motion — never soft fades.
  */
 :root {
-  --teal: #0e4347;
-  --teal-deep: #092f33;
-  --offwhite: #efeee8;
-  --lilac: #968adf;
-  --banana: #f4c04e;
-  --aqua: #bee6de;
-  --poppy: #d9622e;
-  --lime: #c0fb50;
+  --paper: #f2efe6;
+  --ink: #121212;
+  --red: #e62129;
+  --gold: #f5b301;
 
-  --bg: #0e4347;
-  --ink: #efeee8;
-  --accent: #c0fb50;
-
-  --line: color-mix(in srgb, var(--ink) 18%, transparent);
-  --frame-pad: 12px;
-  --frame-top: 58px;
-  --frame-rail: 56px;
+  --line-ink: rgba(18, 18, 18, 0.9);
+  --line-paper: rgba(242, 239, 230, 0.9);
 }
 
 * {
@@ -34,7 +25,7 @@
 }
 
 html {
-  background: var(--bg);
+  background: var(--ink);
 }
 
 html.lenis,
@@ -51,17 +42,16 @@ html.lenis body {
 }
 
 body {
-  color: var(--ink);
-  background: var(--bg);
+  color: var(--paper);
+  background: var(--ink);
   font-family: var(--font-body), sans-serif;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
-  transition: none;
 }
 
 ::selection {
-  background: var(--ink);
-  color: var(--bg);
+  background: var(--red);
+  color: var(--paper);
 }
 
 ::-webkit-scrollbar {
@@ -74,45 +64,103 @@ body {
 .font-display {
   font-family: var(--font-display), sans-serif;
   text-transform: uppercase;
-  line-height: 0.98;
-  letter-spacing: 0.005em;
+  line-height: 0.92;
+  letter-spacing: 0.01em;
+}
+
+.font-jp {
+  font-family: var(--font-jp), sans-serif;
+  font-weight: 900;
 }
 
 .font-mono {
   font-family: var(--font-mono), monospace;
 }
 
-/* Tiny mono label with the square bullet: "■ 001" */
+/* Tiny mono label with a square bullet: "■ CH.001" */
 .hud-label {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   font-family: var(--font-mono), monospace;
   font-size: 0.62rem;
-  letter-spacing: 0.18em;
+  font-weight: 500;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--ink);
-  opacity: 0.85;
 }
 
 .hud-label::before {
   content: "";
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
   background: currentColor;
   flex-shrink: 0;
 }
 
-/* ---------- Grain ---------- */
+/* Outlined display text — big background words, "hollow" manga titles */
+.text-stroke-ink {
+  color: transparent;
+  -webkit-text-stroke: 2px var(--ink);
+}
 
-.noise-overlay {
+.text-stroke-paper {
+  color: transparent;
+  -webkit-text-stroke: 2px var(--paper);
+}
+
+.text-stroke-red {
+  color: transparent;
+  -webkit-text-stroke: 2px var(--red);
+}
+
+/* Vertical Japanese caption running down a margin */
+.v-text {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  letter-spacing: 0.35em;
+}
+
+/* SFX shout text — "GO!!" / "ドン!!" with a hard offset shadow */
+.sfx-text {
+  font-family: var(--font-display), sans-serif;
+  text-transform: uppercase;
+  line-height: 1;
+  color: var(--red);
+  text-shadow: 3px 3px 0 var(--ink);
+  paint-order: stroke fill;
+  -webkit-text-stroke: 1.5px var(--ink);
+}
+
+/* ---------- Halftone & print texture ---------- */
+
+/* Classic manga screen-tone dots */
+.halftone {
+  background-image: radial-gradient(currentColor 1.15px, transparent 1.15px);
+  background-size: 9px 9px;
+}
+
+.halftone-dense {
+  background-image: radial-gradient(currentColor 1.4px, transparent 1.4px);
+  background-size: 6px 6px;
+}
+
+/* Dots fading out towards the bottom-right, for corner accents */
+.halftone-fade {
+  background-image: radial-gradient(currentColor 1.15px, transparent 1.15px);
+  background-size: 9px 9px;
+  -webkit-mask-image: radial-gradient(circle at 30% 30%, black 0%, transparent 72%);
+  mask-image: radial-gradient(circle at 30% 30%, black 0%, transparent 72%);
+}
+
+/* Print grain over everything, very subtle */
+.grain-overlay {
   position: fixed;
   inset: -50%;
   width: 200%;
   height: 200%;
   pointer-events: none;
   z-index: 90;
-  opacity: 0.04;
+  opacity: 0.05;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   animation: grain 8s steps(10) infinite;
 }
@@ -130,124 +178,58 @@ body {
   90% { transform: translate(-10%, 10%); }
 }
 
-/* ---------- The Frame (persistent HUD chrome) ---------- */
+/* ---------- Manga panels ---------- */
 
-.the-frame {
-  position: fixed;
-  inset: 0;
-  z-index: 80;
-  pointer-events: none;
-}
-
-.the-frame a,
-.the-frame button {
-  pointer-events: auto;
-}
-
-.frame-border {
-  position: absolute;
-  inset: var(--frame-pad);
-  border: 1px solid var(--line);
-}
-
-.frame-topline {
-  position: absolute;
-  left: var(--frame-pad);
-  right: var(--frame-pad);
-  top: calc(var(--frame-pad) + var(--frame-top));
-  height: 1px;
-  background: var(--line);
-}
-
-.frame-railline {
-  position: absolute;
-  left: calc(var(--frame-pad) + var(--frame-rail));
-  top: var(--frame-pad);
-  bottom: var(--frame-pad);
-  width: 1px;
-  background: var(--line);
-}
-
-@media (max-width: 767px) {
-  :root {
-    --frame-rail: 0px;
-    --frame-top: 52px;
-  }
-  .frame-railline {
-    display: none;
-  }
-}
-
-/* ---------- Custom cursor ---------- */
-
-@media (pointer: fine) {
-  .custom-cursor-active,
-  .custom-cursor-active a,
-  .custom-cursor-active button {
-    cursor: none;
-  }
-}
-
-.cursor-dot,
-.cursor-ring {
-  position: fixed;
-  top: 0;
-  left: 0;
-  pointer-events: none;
-  z-index: 9999;
-  border-radius: 50%;
-  will-change: transform;
-}
-
-.cursor-dot {
-  width: 6px;
-  height: 6px;
-  background: var(--ink);
-}
-
-.cursor-ring {
-  width: 34px;
-  height: 34px;
-  border: 1px solid color-mix(in srgb, var(--ink) 45%, transparent);
-  transition: width 0.3s ease, height 0.3s ease, background-color 0.3s ease;
-}
-
-.cursor-ring.is-hover {
-  width: 60px;
-  height: 60px;
-  background: color-mix(in srgb, var(--ink) 10%, transparent);
-}
-
-@media (pointer: coarse) {
-  .cursor-dot,
-  .cursor-ring {
-    display: none;
-  }
-}
-
-/* ---------- Folder-tab card (KPR signature shape) ---------- */
-
-.folder-card {
+/* Bold-bordered panel with a hard offset shadow — the core card unit */
+.panel {
   position: relative;
-  background: var(--offwhite);
-  clip-path: polygon(0 0, 42% 0, 50% 7%, 100% 7%, 100% 100%, 0 100%);
-  overflow: hidden;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  box-shadow: 6px 6px 0 var(--ink);
 }
 
-.folder-card--right {
-  clip-path: polygon(0 7%, 50% 7%, 58% 0, 100% 0, 100% 100%, 0 100%);
+.panel--red {
+  box-shadow: 6px 6px 0 var(--red);
 }
 
-.folder-card .folder-label {
-  position: absolute;
-  top: 1.5%;
-  left: 4%;
-  z-index: 2;
+.panel--on-ink {
+  border-color: var(--paper);
+  box-shadow: 6px 6px 0 var(--red);
 }
 
-.folder-card--right .folder-label {
-  left: auto;
-  right: 4%;
+/* Technique / tech-stack chip */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.32rem 0.7rem;
+  border: 2px solid currentColor;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Rough-edged chip — ink-brush rectangle for the 第00X話 chapter markers */
+.brush-chip {
+  clip-path: polygon(
+    0% 10%, 2.5% 0%, 38% 3%, 62% 0%, 97% 2%, 100% 14%,
+    98.5% 52%, 100% 86%, 96% 100%, 55% 97%, 30% 100%, 3% 98%, 0% 88%
+  );
+}
+
+/* Rubber "CLEARED" stamp */
+.stamp {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  border: 2.5px solid var(--red);
+  color: var(--red);
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transform: rotate(-6deg);
 }
 
 /* ---------- Reveal primitives ---------- */
@@ -261,201 +243,411 @@ body {
   display: block;
 }
 
-/* ---------- Buttons ---------- */
+/* Elements animated by useRevealScope start hidden to avoid a flash */
+[data-reveal],
+[data-reveal-pop],
+[data-wipe] {
+  opacity: 0;
+}
 
-.btn-hud {
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal],
+  [data-reveal-pop],
+  [data-wipe] {
+    opacity: 1;
+  }
+}
+
+/* ---------- Navigation ---------- */
+
+/* Slash underline: a skewed red stroke that cuts in from the left.
+   No display set here — Tailwind utilities (block/flex/inline) stay in charge. */
+.slash-link {
+  position: relative;
+}
+
+.slash-link::after {
+  content: "";
+  position: absolute;
+  left: -4%;
+  bottom: -3px;
+  width: 108%;
+  height: 3px;
+  background: var(--red);
+  transform: scaleX(0) skewX(-30deg);
+  transform-origin: right;
+  transition: transform 0.28s cubic-bezier(0.85, 0, 0.15, 1);
+}
+
+.slash-link:hover::after,
+.slash-link:focus-visible::after {
+  transform: scaleX(1) skewX(-30deg);
+  transform-origin: left;
+}
+
+/* ---------- Charge button ---------- */
+
+.btn-charge {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.6rem;
-  padding: 0.85rem 1.9rem;
-  background: var(--ink);
-  color: var(--bg);
-  font-family: var(--font-mono), monospace;
-  font-size: 0.72rem;
-  font-weight: 500;
+  padding: 1rem 2.2rem;
+  background: var(--red);
+  color: var(--paper);
+  border: 3px solid var(--ink);
+  box-shadow: 5px 5px 0 var(--ink);
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
-  border: 1px solid var(--ink);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  will-change: transform;
 }
 
-.btn-hud:hover {
-  background: transparent;
-  color: var(--ink);
-}
-
-.btn-hud.ghost {
-  background: transparent;
-  color: var(--ink);
-  border-color: var(--line);
-}
-
-.btn-hud.ghost:hover {
-  background: var(--ink);
-  color: var(--bg);
-  border-color: var(--ink);
-}
-
-.link-underline {
-  position: relative;
-}
-
-.link-underline::after {
+/* Charge ring builds while hovering, then pulses — transform/opacity only */
+.btn-charge::before {
   content: "";
   position: absolute;
-  left: 0;
-  bottom: -2px;
-  width: 100%;
-  height: 1px;
-  background: currentColor;
-  transform: scaleX(0);
-  transform-origin: right;
-  transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+  inset: -9px;
+  border: 2px solid var(--red);
+  opacity: 0;
+  transform: scale(0.82);
+  pointer-events: none;
 }
 
-.link-underline:hover::after {
-  transform: scaleX(1);
-  transform-origin: left;
+.btn-charge:hover::before,
+.btn-charge:focus-visible::before {
+  animation: charge-ring 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards,
+    charge-pulse 1.4s ease-in-out 1.1s infinite;
 }
 
-/* ---------- Form fields ---------- */
+.btn-charge:active {
+  transform: translate(4px, 4px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
 
-.field-kpr {
-  width: 100%;
+.btn-charge--ghost {
   background: transparent;
-  border: none;
-  border-bottom: 1px solid color-mix(in srgb, var(--ink) 30%, transparent);
-  padding: 0.9rem 0;
+  color: currentColor;
+  border-color: currentColor;
+  box-shadow: 5px 5px 0 currentColor;
+}
+
+.btn-charge--ghost:active {
+  box-shadow: 1px 1px 0 currentColor;
+}
+
+.btn-charge--sm {
+  padding: 0.5rem 1.15rem;
+  font-size: 0.72rem;
+  border-width: 2px;
+  box-shadow: 3px 3px 0 var(--paper);
+}
+
+.btn-charge--sm:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--paper);
+}
+
+.btn-charge--on-ink {
+  border-color: var(--paper);
+  box-shadow: 5px 5px 0 var(--paper);
+}
+
+.btn-charge--on-ink:active {
+  box-shadow: 1px 1px 0 var(--paper);
+}
+
+@keyframes charge-ring {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes charge-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(1.045);
+  }
+}
+
+/* ---------- Battle cards ---------- */
+
+.battle-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
   color: var(--ink);
-  font-family: var(--font-body), sans-serif;
-  font-size: 1.05rem;
-  transition: border-color 0.3s ease;
+  border: 3px solid var(--ink);
+  box-shadow: 7px 7px 0 var(--red);
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
 }
 
-.field-kpr::placeholder {
-  color: color-mix(in srgb, var(--ink) 40%, transparent);
+.battle-card:hover {
+  transform: translate(-4px, -6px) rotate(-0.4deg);
+  box-shadow: 12px 13px 0 var(--red);
 }
 
-.field-kpr:focus {
-  outline: none;
-  border-bottom-color: var(--ink);
-}
-
-/* ---------- Weather radar (preloader) ---------- */
-
-.radar-sweep {
+/* Impact flash — a hard white flicker across the card on hover */
+.battle-card::after {
+  content: "";
   position: absolute;
   inset: 0;
-  border-radius: 9999px;
-  background: conic-gradient(from 0deg, rgba(192, 251, 80, 0.45), transparent 28%);
-  animation: radar-spin 2.6s linear infinite;
+  background: var(--paper);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 3;
 }
 
-@keyframes radar-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.battle-card:hover::after {
+  animation: impact-flash 0.38s steps(2, jump-none) 1;
 }
 
-.radar-blip {
+@keyframes impact-flash {
+  0% { opacity: 0.9; }
+  50% { opacity: 0; }
+  75% { opacity: 0.45; }
+  100% { opacity: 0; }
+}
+
+.battle-card .battle-thumb {
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.battle-card:hover .battle-thumb {
+  transform: scale(1.06);
+}
+
+/* ---------- Forms ---------- */
+
+.field-manga {
+  width: 100%;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  padding: 0.85rem 1rem;
+  color: var(--ink);
+  font-family: var(--font-body), sans-serif;
+  font-size: 1rem;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.field-manga::placeholder {
+  color: rgba(18, 18, 18, 0.4);
+}
+
+.field-manga:focus {
+  outline: none;
+  transform: translate(-3px, -3px);
+  box-shadow: 4px 4px 0 var(--red);
+}
+
+/* ---------- Marquee strip ---------- */
+
+.marquee {
+  display: flex;
+  overflow: hidden;
+  user-select: none;
+}
+
+.marquee-track {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 2.5rem;
+  padding-right: 2.5rem;
+  min-width: 100%;
+  animation: marquee-scroll 22s linear infinite;
+}
+
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+
+/* ---------- Speed lines (horizontal streak field, CSS-only) ---------- */
+
+.streak {
   position: absolute;
-  width: 5px;
-  height: 5px;
-  border-radius: 9999px;
-  background: #c0fb50;
-  animation: blip-pulse 2.6s ease-in-out infinite;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, currentColor 25%, currentColor 75%, transparent);
+  animation: streak-dash linear infinite;
+  opacity: 0;
 }
 
-@keyframes blip-pulse {
-  0%, 20%, 100% { opacity: 0; transform: scale(0.5); }
-  8% { opacity: 1; transform: scale(1.4); }
-  14% { opacity: 0.6; transform: scale(1); }
+@keyframes streak-dash {
+  0% { transform: translateX(-40vw) scaleX(0.4); opacity: 0; }
+  12% { opacity: 0.8; }
+  88% { opacity: 0.8; }
+  100% { transform: translateX(110vw) scaleX(1); opacity: 0; }
 }
 
-/* ---------- Weather FX ---------- */
+/* ---------- Custom cursor: target-lock crosshair ---------- */
 
-@keyframes rain-fall {
-  from { transform: translateY(-12vh); }
-  to { transform: translateY(112vh); }
+@media (pointer: fine) {
+  .custom-cursor-active,
+  .custom-cursor-active a,
+  .custom-cursor-active button,
+  .custom-cursor-active input,
+  .custom-cursor-active textarea,
+  .custom-cursor-active label {
+    cursor: none;
+  }
 }
 
-.rain-drop {
-  position: absolute;
+.cursor-lock {
+  position: fixed;
   top: 0;
-  width: 1px;
-  background: currentColor;
-  animation: rain-fall linear infinite;
+  left: 0;
+  z-index: 9999;
+  pointer-events: none;
+  width: 44px;
+  height: 44px;
+  will-change: transform;
 }
 
-@keyframes snow-fall {
-  from { transform: translateY(-6vh); }
-  to { transform: translateY(112vh); }
-}
-
-@keyframes snow-sway {
-  0%, 100% { margin-left: 0; }
-  50% { margin-left: 20px; }
-}
-
-.snow-flake {
+.cursor-reticle {
   position: absolute;
-  top: 0;
-  border-radius: 9999px;
-  background: currentColor;
-  animation: snow-fall linear infinite, snow-sway ease-in-out infinite;
+  inset: 0;
+  display: block;
 }
 
-@keyframes wind-drift {
-  from { transform: translateX(-30vw); opacity: 0; }
-  15% { opacity: 1; }
-  85% { opacity: 1; }
-  to { transform: translateX(105vw); opacity: 0; }
-}
-
-.wind-line {
+.cursor-lock .cursor-cross-h,
+.cursor-lock .cursor-cross-v {
   position: absolute;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, currentColor 30%, currentColor 70%, transparent);
-  animation: wind-drift linear infinite;
+  left: 50%;
+  top: 50%;
+  background: currentColor;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-@keyframes bolt-flash {
-  0%, 90%, 100% { opacity: 0; }
-  91%, 93% { opacity: 1; }
-  94% { opacity: 0.15; }
-  95% { opacity: 0.8; }
-  97% { opacity: 0; }
+.cursor-lock .cursor-cross-h {
+  width: 14px;
+  height: 1.5px;
+  transform: translate(-50%, -50%);
 }
 
-.lightning-bolt {
-  animation: bolt-flash 7s infinite;
+.cursor-lock .cursor-cross-v {
+  width: 1.5px;
+  height: 14px;
+  transform: translate(-50%, -50%);
+}
+
+/* Four corner brackets of the targeting reticle */
+.cursor-bracket {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 2px solid currentColor;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cursor-bracket--tl { top: 0; left: 0; border-right: none; border-bottom: none; }
+.cursor-bracket--tr { top: 0; right: 0; border-left: none; border-bottom: none; }
+.cursor-bracket--bl { bottom: 0; left: 0; border-right: none; border-top: none; }
+.cursor-bracket--br { bottom: 0; right: 0; border-left: none; border-top: none; }
+
+/* Locked on: brackets snap outwards, cross shrinks */
+.cursor-lock.is-locked .cursor-bracket--tl { transform: translate(-7px, -7px); }
+.cursor-lock.is-locked .cursor-bracket--tr { transform: translate(7px, -7px); }
+.cursor-lock.is-locked .cursor-bracket--bl { transform: translate(-7px, 7px); }
+.cursor-lock.is-locked .cursor-bracket--br { transform: translate(7px, 7px); }
+
+.cursor-lock.is-locked .cursor-cross-h { transform: translate(-50%, -50%) scaleX(0.45); }
+.cursor-lock.is-locked .cursor-cross-v { transform: translate(-50%, -50%) scaleY(0.45); }
+
+.cursor-label {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%) scale(0.7);
+  opacity: 0;
+  white-space: nowrap;
+  background: var(--red);
+  color: var(--paper);
+  border: 2px solid var(--ink);
+  padding: 0.18rem 0.5rem;
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transition: opacity 0.18s ease, transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cursor-lock.is-locked .cursor-label:not(:empty) {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+@media (pointer: coarse) {
+  .cursor-lock {
+    display: none;
+  }
 }
 
 /* ---------- Section shell ---------- */
 
 .section-shell {
   position: relative;
-  padding: 7rem 1.5rem;
+  padding: 6.5rem 1.5rem;
+}
+
+/* native anchor jumps (reduced motion / no JS) clear the fixed navbar */
+section[id],
+footer[id] {
+  scroll-margin-top: 76px;
 }
 
 @media (min-width: 768px) {
   .section-shell {
-    padding: 9rem 3rem 9rem calc(var(--frame-pad) + var(--frame-rail) + 2.5rem);
+    padding: 8.5rem 3rem;
   }
 }
 
+.theme-paper {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.theme-ink {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* ---------- Reduced motion ---------- */
+
 @media (prefers-reduced-motion: reduce) {
-  .noise-overlay {
+  .grain-overlay,
+  .marquee-track,
+  .streak {
     animation: none;
   }
-  .rain-drop,
-  .snow-flake,
-  .wind-line,
-  .lightning-bolt {
+
+  .streak {
     display: none;
   }
-  .radar-sweep,
-  .radar-blip {
+
+  .btn-charge:hover::before,
+  .btn-charge:focus-visible::before {
+    animation: none;
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .battle-card:hover::after {
     animation: none;
   }
 }

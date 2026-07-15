@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { Archivo_Black, Archivo, IBM_Plex_Mono } from "next/font/google";
+import { Anton, Archivo, IBM_Plex_Mono, Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 
-const archivoBlack = Archivo_Black({
+const anton = Anton({
   variable: "--font-display",
   weight: "400",
   subsets: ["latin"],
@@ -15,19 +15,26 @@ const archivo = Archivo({
 
 const plexMono = IBM_Plex_Mono({
   variable: "--font-mono",
-  weight: ["400", "500"],
+  weight: ["400", "500", "700"],
   subsets: ["latin"],
+});
+
+const notoJp = Noto_Sans_JP({
+  variable: "--font-jp",
+  weight: ["700", "900"],
+  subsets: ["latin"],
+  preload: false,
 });
 
 export const metadata: Metadata = {
   title: "Edwin Satya Yudistira — Full Stack Developer",
   description:
-    "Full Stack Web Developer specializing in React, Next.js, and modern web technologies. Creating beautiful, functional, and user-centered digital experiences.",
+    "Full Stack Web Developer specializing in React, Next.js, and modern web technologies. A developer's story told as a shounen saga — every project a battle cleared.",
   keywords: "web developer, full stack developer, react, next.js, typescript, portfolio",
   icons: {
     icon: "/vscode.svg",
   },
-  authors: [{ name: "Edwin" }],
+  authors: [{ name: "Edwin Satya Yudistira" }],
 };
 
 export default function RootLayout({
@@ -38,7 +45,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${archivoBlack.variable} ${archivo.variable} ${plexMono.variable} antialiased`}
+        className={`${anton.variable} ${archivo.variable} ${plexMono.variable} ${notoJp.variable} antialiased`}
       >
         {children}
       </body>

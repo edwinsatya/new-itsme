@@ -3,43 +3,61 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "@/lib/gsap";
 
+const INTERACTIVE = "a, button, input, textarea, label, [data-cursor]";
+
+/**
+ * Target-lock cursor: a crosshair reticle that follows the pointer and snaps
+ * its corner brackets open when it acquires an interactive element. Elements
+ * can announce themselves via `data-cursor-label="ENTER BATTLE"`.
+ */
 const Cursor = () => {
-  const dotRef = useRef<HTMLDivElement>(null);
-  const ringRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const labelRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     if (window.matchMedia("(pointer: coarse)").matches) return;
 
     document.body.classList.add("custom-cursor-active");
 
-    const dot = dotRef.current!;
-    const ring = ringRef.current!;
-    gsap.set([dot, ring], { xPercent: -50, yPercent: -50, opacity: 0 });
+    const root = rootRef.current!;
+    const label = labelRef.current!;
+    gsap.set(root, { xPercent: -50, yPercent: -50, opacity: 0 });
 
-    const dotX = gsap.quickTo(dot, "x", { duration: 0.15, ease: "power3.out" });
-    const dotY = gsap.quickTo(dot, "y", { duration: 0.15, ease: "power3.out" });
-    const ringX = gsap.quickTo(ring, "x", { duration: 0.45, ease: "power3.out" });
-    const ringY = gsap.quickTo(ring, "y", { duration: 0.45, ease: "power3.out" });
+    const x = gsap.quickTo(root, "x", { duration: 0.13, ease: "power3.out" });
+    const y = gsap.quickTo(root, "y", { duration: 0.13, ease: "power3.out" });
+
+    let locked = false;
 
     const onMove = (e: MouseEvent) => {
-      gsap.to([dot, ring], { opacity: 1, duration: 0.3, overwrite: "auto" });
-      dotX(e.clientX);
-      dotY(e.clientY);
-      ringX(e.clientX);
-      ringY(e.clientY);
+      gsap.to(root, { opacity: 1, duration: 0.25, overwrite: "auto" });
+      x(e.clientX);
+      y(e.clientY);
     };
 
     const onOver = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.closest("a, button, [data-cursor-hover]")) {
-        ring.classList.add("is-hover");
-      } else {
-        ring.classList.remove("is-hover");
+      const target = (e.target as HTMLElement).closest<HTMLElement>(INTERACTIVE);
+      const shouldLock = !!target;
+
+      if (shouldLock !== locked) {
+        locked = shouldLock;
+        root.classList.toggle("is-locked", locked);
+        if (locked) {
+          // snap-to-lock: quick rotation settle, like a targeting UI acquiring
+          gsap.fromTo(
+            root,
+            { rotation: 42 },
+            { rotation: 0, duration: 0.32, ease: "back.out(2.6)", overwrite: "auto" }
+          );
+        }
       }
+
+      label.textContent = target
+        ? (target.closest<HTMLElement>("[data-cursor-label]")?.dataset.cursorLabel ?? "")
+        : "";
     };
 
     const onLeave = () => {
-      gsap.to([dot, ring], { opacity: 0, duration: 0.3, overwrite: "auto" });
+      gsap.to(root, { opacity: 0, duration: 0.3, overwrite: "auto" });
     };
 
     window.addEventListener("mousemove", onMove);
@@ -55,10 +73,19 @@ const Cursor = () => {
   }, []);
 
   return (
-    <>
-      <div ref={dotRef} className="cursor-dot" />
-      <div ref={ringRef} className="cursor-ring" />
-    </>
+    <div ref={rootRef} className="cursor-lock text-[var(--paper)]">
+      {/* reticle blends with the backdrop so it stays visible on paper and ink;
+          the label sits outside the blend group to keep its true red */}
+      <span className="cursor-reticle mix-blend-difference">
+        <span className="cursor-cross-h" />
+        <span className="cursor-cross-v" />
+        <span className="cursor-bracket cursor-bracket--tl" />
+        <span className="cursor-bracket cursor-bracket--tr" />
+        <span className="cursor-bracket cursor-bracket--bl" />
+        <span className="cursor-bracket cursor-bracket--br" />
+      </span>
+      <span ref={labelRef} className="cursor-label" />
+    </div>
   );
 };
 

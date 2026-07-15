@@ -2,13 +2,17 @@
 
 import { useEffect } from "react";
 import Lenis from "lenis";
-import { gsap, ScrollTrigger } from "@/lib/gsap";
+import { gsap, ScrollTrigger, prefersReducedMotion } from "@/lib/gsap";
 
 const SmoothScroll = () => {
   useEffect(() => {
+    // Respect reduced motion: native scrolling, native anchors.
+    if (prefersReducedMotion()) return;
+
     const lenis = new Lenis({
       lerp: 0.1,
-      anchors: { offset: 0 },
+      // clear the fixed navbar when jumping to a chapter anchor
+      anchors: { offset: -72 },
     });
 
     lenis.on("scroll", ScrollTrigger.update);

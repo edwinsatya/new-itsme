@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "@/lib/gsap";
 
+/** Story progress: a red energy bar charging along the very top edge. */
 const ScrollProgress = () => {
   const barRef = useRef<HTMLDivElement>(null);
 
@@ -30,8 +31,8 @@ const ScrollProgress = () => {
   }, []);
 
   return (
-    <div className="pointer-events-none fixed left-0 top-0 z-[70] h-[2px] w-full">
-      <div ref={barRef} className="h-full w-full bg-[var(--accent)]" />
+    <div className="pointer-events-none fixed left-0 top-0 z-[85] h-[4px] w-full">
+      <div ref={barRef} className="h-full w-full bg-[var(--red)]" />
     </div>
   );
 };

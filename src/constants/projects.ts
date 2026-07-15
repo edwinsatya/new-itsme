@@ -2,18 +2,17 @@ export const projects = [
     {
       id: 1,
       title: "food analyzer",
-      description:
-        "//... web analysis food using ai for checking nutrition;",
+      description: "Web analysis food using AI for checking nutrition.",
       tech: ["Next.js", "Tailwind.css", "OpenRouter AI", "Cloudinary"],
       image: "/ssproject1.svg",
       github: "https://github.com/edwinsatya/food-analyzer",
       live: "https://food-analyzer.touchsimpledev.site",
     },
     {
-      id: 2,  
+      id: 2,
       title: "DeskLab",
       description:
-        "//... web rental for setup your workspace. Confused? you can ask Desklab bot in the live chat for assistance;",
+        "Web rental for setup your workspace. Confused? You can ask the DeskLab bot in the live chat for assistance.",
       tech: ["Next.js", "Tailwind.css", "OpenRouter AI", "zustand"],
       image: "/ssproject2.svg",
       github: "https://github.com/edwinsatya/DeskLab",
@@ -22,7 +21,7 @@ export const projects = [
     {
       id: 3,
       title: "pokedex app",
-      description: "//... Fun web xD, you can catch them all. Pokemon lovers must visit this app;",
+      description: "Fun web xD, you can catch them all. Pokemon lovers must visit this app.",
       tech: ["Next.js", "Tailwind.css", "Pokeapi", "Pokewallet"],
       image: "/ssproject3.svg",
       github: "https://github.com/edwinsatya/pokedex",
@@ -31,8 +30,7 @@ export const projects = [
     {
       id: 4,
       title: "Tola Web",
-      description:
-        "//... Landing page for Tola Web, a web development service;",
+      description: "Landing page for Tola Web, a web development service.",
       tech: ["Next.js", "Tailwind.css"],
       image: "/ssproject4.svg",
       github: "",
@@ -41,7 +39,7 @@ export const projects = [
     {
       id: 5,
       title: "MileApp Tasks Management",
-      description: "//... Register, Login and then you can manage your tasks;",
+      description: "Register, login and then you can manage your tasks.",
       tech: ["Nuxt", "Tailwind", "Node.js", "Express", "Mockapi.io"],
       image: "/ssproject5.svg",
       github: "https://github.com/edwinsatya/mileapp-client",
@@ -50,7 +48,8 @@ export const projects = [
     {
       id: 6,
       title: "Happy Farm Dashboard",
-      description: "//... Dashboard for Happy Farm project, providing insights and management tools for farm operations;",
+      description:
+        "Dashboard for the Happy Farm project, providing insights and management tools for farm operations.",
       tech: ["Next.js", "Node.js", "PostgreSQL", "Tailwind.css", "Prisma"],
       image: "/ssproject6.svg",
       github: "",
@@ -59,7 +58,8 @@ export const projects = [
     {
       id: 7,
       title: "Magloft.com",
-      description: "//... Landing page for Magloft's digital publishing platform, showcasing their services and features;",
+      description:
+        "Landing page for Magloft's digital publishing platform, showcasing their services and features.",
       tech: ["Next.js", "Tailwind.css"],
       image: "/ssproject7.svg",
       github: "",
@@ -69,7 +69,7 @@ export const projects = [
       id: 8,
       title: "mini-google",
       description:
-        "//...mini google search engine with minimal design, you can save news and read later;",
+        "Mini google search engine with minimal design, you can save news and read later.",
       tech: ["react", "serper.dev", "context-api"],
       image: "/ssproject8.svg",
       github: "https://github.com/edwinsatya/mini-google",
@@ -79,7 +79,7 @@ export const projects = [
       id: 9,
       title: "bountie-hunter",
       description:
-        "//...web3 bountie company, you can stacking your token and get more rewards;",
+        "Web3 bountie company, you can stack your tokens and get more rewards.",
       tech: ["Next.js", "Tailwind.css", "metamask", "web3"],
       image: "/ssproject9.svg",
       github: "",
@@ -89,7 +89,7 @@ export const projects = [
       id: 10,
       title: "Weathernime",
       description:
-        "//...weather forecast web with anime concept, built through vibe coding;",
+        "Weather forecast web with anime concept, built through vibe coding.",
       tech: ["Next.js", "Open-Meteo API", "Vibe Coding", "Claude"],
       image: "/ssproject10.svg",
       github: "https://github.com/edwinsatya/weathernime",

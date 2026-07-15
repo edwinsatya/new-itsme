@@ -3,15 +3,8 @@
 import { useState } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { useRevealScope } from "@/hooks/useRevealScope";
-import {
-  useSectionParallax,
-  SunOutline,
-  Cloud,
-  Waves,
-  Rainbow,
-  CrossMarks,
-  SectionGrid,
-} from "./scenes";
+import ChapterHeader from "./fx/ChapterHeader";
+import ChargeButton from "./fx/ChargeButton";
 
 type SubmitStatus = "idle" | "loading" | "success" | "error";
 
@@ -23,7 +16,7 @@ type Web3FormsResponse = {
 
 const accessKey = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY;
 
-const Contact = () => {
+const Summon = () => {
   const scope = useRevealScope<HTMLElement>();
   const [formData, setFormData] = useState({
     name: "",
@@ -85,43 +78,35 @@ const Contact = () => {
     });
   };
 
-  useSectionParallax(scope);
-
   return (
-    <section id="contact" ref={scope} data-theme="aqua" className="section-shell overflow-hidden">
-      {/* Calm-after-the-rain scenery */}
-      <SectionGrid />
-      <SunOutline className="left-[6%] top-[4%] h-56 w-56 text-[#0e4347] opacity-20 md:h-80 md:w-80" speed={-0.26} />
-      <Rainbow className="right-[4%] top-[10%] h-32 w-64 md:h-48 md:w-[28rem]" speed={-0.3} />
-      <Cloud className="right-[2%] top-[26%] h-14 w-52 text-[#efeee8] opacity-70" speed={-0.35} />
-      <Cloud className="right-[30%] top-[16%] h-10 w-36 text-[#efeee8] opacity-50" speed={-0.18} />
-      <CrossMarks className="text-[#0e4347] opacity-25" speed={-0.2} />
-      <Waves className="text-[#0e4347]" />
+    <section id="contact" ref={scope} className="theme-paper section-shell overflow-hidden">
+      <div
+        className="halftone-fade pointer-events-none absolute left-[-6%] top-[8%] h-96 w-[32rem] text-[var(--ink)] opacity-20"
+        aria-hidden
+      />
+      <p
+        className="font-jp pointer-events-none absolute right-[-2%] top-[6%] select-none text-[clamp(6rem,18vw,15rem)] leading-none opacity-[0.05]"
+        aria-hidden
+      >
+        召喚
+      </p>
 
-      <div data-enter className="relative z-10 mx-auto max-w-6xl">
-        <div data-reveal className="mb-10 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-6">
-            <p className="hud-label">005 — Contact</p>
-            <p className="hud-label">WX // Clear after rain — 24°C</p>
-          </div>
-          <p className="hud-label">
-            <span className="mr-1 inline-block h-[6px] w-[6px] animate-pulse bg-[var(--accent)]" />
-            Open for new job / projects
+      <div className="relative z-10 mx-auto max-w-6xl">
+        <div className="flex flex-wrap items-start justify-between gap-6">
+          <ChapterHeader
+            chapter={5}
+            sub="Final chapter — Contact"
+            lines={["Send a", "Signal"]}
+            className="max-w-xl"
+          />
+          <p data-reveal className="hud-label mt-2 animate-pulse text-[var(--red)]">
+            Open for new quests
           </p>
         </div>
 
-        <h2 data-scroll-speed="-0.2" className="font-display mb-20 text-[clamp(2.6rem,8vw,6.5rem)] text-[var(--ink)]">
-          <span className="line-mask md:ml-[10vw]">
-            <span>Join the</span>
-          </span>
-          <span className="line-mask">
-            <span>story. let&apos;s build.</span>
-          </span>
-        </h2>
-
-        <div className="grid grid-cols-1 gap-16 lg:grid-cols-2">
-          {/* Form */}
-          <form onSubmit={handleSubmit} data-reveal className="space-y-10">
+        <div className="mt-16 grid grid-cols-1 gap-16 lg:grid-cols-2">
+          {/* Summon request form */}
+          <form onSubmit={handleSubmit} data-wipe className="space-y-8">
             <input
               type="checkbox"
               name="botcheck"
@@ -132,7 +117,7 @@ const Contact = () => {
             />
 
             <div>
-              <label htmlFor="name" className="hud-label mb-1 !flex">
+              <label htmlFor="name" className="hud-label mb-2 !flex">
                 01 — Your name
               </label>
               <input
@@ -141,14 +126,14 @@ const Contact = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="field-kpr"
+                className="field-manga"
                 placeholder="John Doe"
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="email" className="hud-label mb-1 !flex">
+              <label htmlFor="email" className="hud-label mb-2 !flex">
                 02 — Your email
               </label>
               <input
@@ -157,14 +142,14 @@ const Contact = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="field-kpr"
+                className="field-manga"
                 placeholder="john@example.com"
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="message" className="hud-label mb-1 !flex">
+              <label htmlFor="message" className="hud-label mb-2 !flex">
                 03 — Your message
               </label>
               <textarea
@@ -172,67 +157,63 @@ const Contact = () => {
                 name="message"
                 value={formData.message}
                 onChange={handleChange}
-                rows={4}
-                className="field-kpr resize-none"
-                placeholder="Tell me about your project..."
+                rows={5}
+                className="field-manga resize-none"
+                placeholder="Tell me about your quest..."
                 required
               />
             </div>
 
             {status === "success" && (
-              <p className="border border-[var(--ink)] px-5 py-4 font-mono text-sm text-[var(--ink)]">
-                Message sent. I&apos;ll get back to you soon.
+              <p className="panel px-5 py-4 font-mono text-sm">
+                Signal received. I&apos;ll answer the summons soon.
               </p>
             )}
 
             {status === "error" && (
-              <p className="border border-[var(--accent)] px-5 py-4 font-mono text-sm text-[var(--accent)]">
+              <p className="border-[3px] border-[var(--red)] px-5 py-4 font-mono text-sm text-[var(--red)]">
                 {errorMessage}
               </p>
             )}
 
-            <button
-              type="submit"
-              disabled={status === "loading"}
-              className="btn-hud disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {status === "loading" ? "Sending..." : "Send message"}
+            <ChargeButton type="submit" disabled={status === "loading"} cursorLabel="FIRE!">
+              {status === "loading" ? "Sending signal..." : "Fire the signal"}
               <ArrowUpRight size={16} />
-            </button>
+            </ChargeButton>
           </form>
 
-          {/* Info */}
+          {/* Character contact sheet */}
           <div className="flex flex-col justify-between gap-12">
             <div data-reveal className="space-y-10">
               <div>
-                <p className="hud-label mb-3">Email</p>
+                <p className="hud-label mb-3 text-[var(--red)]">Direct line</p>
                 <a
                   href="mailto:edwinsatyayudistira@gmail.com"
-                  className="link-underline font-display block w-fit break-all text-[clamp(1.1rem,2.2vw,1.8rem)] uppercase text-[var(--ink)]"
+                  className="slash-link font-display block w-fit break-all text-[clamp(1.1rem,2.2vw,1.7rem)] uppercase"
                 >
                   edwinsatyayudistira@gmail.com
                 </a>
               </div>
 
               <div>
-                <p className="hud-label mb-3">Location</p>
-                <p className="text-xl text-[var(--ink)]">Lumajang, Indonesia</p>
+                <p className="hud-label mb-3 text-[var(--red)]">Home base</p>
+                <p className="text-xl">Lumajang, Indonesia</p>
               </div>
 
               <div>
-                <p className="hud-label mb-3">Socials</p>
+                <p className="hud-label mb-3 text-[var(--red)]">Allies & records</p>
                 <div className="flex gap-8">
                   <a
                     href="https://github.com/edwinsatya"
                     target="_blank"
-                    className="link-underline flex items-center gap-1 text-lg text-[var(--ink)]"
+                    className="slash-link flex items-center gap-1 text-lg"
                   >
                     Github <ArrowUpRight size={14} />
                   </a>
                   <a
                     href="https://www.linkedin.com/in/edwin-satya-yudistira/"
                     target="_blank"
-                    className="link-underline flex items-center gap-1 text-lg text-[var(--ink)]"
+                    className="slash-link flex items-center gap-1 text-lg"
                   >
                     LinkedIn <ArrowUpRight size={14} />
                   </a>
@@ -240,9 +221,14 @@ const Contact = () => {
               </div>
             </div>
 
-            <div data-reveal className="border border-[var(--line)] p-8">
-              <p className="hud-label">Average response time</p>
-              <p className="font-display mt-2 text-3xl text-[var(--ink)]">{"< 24 hours"}</p>
+            <div data-reveal-pop data-rotate="-1.5" className="opacity-0">
+              <div className="panel panel--red p-8">
+                <p className="hud-label text-[var(--red)]">Response speed stat</p>
+                <p className="font-display mt-2 text-4xl">{"< 24 hours"}</p>
+                <p className="mt-2 font-mono text-[0.62rem] uppercase tracking-[0.2em] opacity-60">
+                  Average time to answer a summons
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -251,4 +237,4 @@ const Contact = () => {
   );
 };
 
-export default Contact;
+export default Summon;
