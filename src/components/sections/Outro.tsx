@@ -3,6 +3,7 @@
 import { ArrowUp } from "lucide-react";
 import { useRevealScope } from "@/hooks/useRevealScope";
 import GlitchText from "@/components/fx/GlitchText";
+import SectionBackground from "@/components/fx/SectionBackground";
 import { runner, socials } from "@/constants/profile";
 
 /** Sign-off: connection terminated, one last flicker, then the city hums on. */
@@ -17,6 +18,7 @@ const Outro = () => {
       style={{ zIndex: 30, marginTop: "-4rem", paddingBottom: "6.5rem" }}
     >
       <div className="sector-bg" aria-hidden style={{ background: "var(--bg)" }} />
+      <SectionBackground variant="outro" />
       <div className="seam-band" aria-hidden />
 
       <div className="relative z-10 mx-auto flex max-w-6xl flex-col items-center gap-8 text-center">

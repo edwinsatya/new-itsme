@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { gsap, EASE_OUT, PRELOADER_DONE_EVENT, prefersReducedMotion } from "@/lib/gsap";
-import NeonRain from "@/components/fx/NeonRain";
+import SectionBackground from "@/components/fx/SectionBackground";
 import { runner } from "@/constants/profile";
 
 /* deterministic skyline geometry: [x, width, height] — SSR-stable */
@@ -116,7 +116,7 @@ const Hero = () => {
       <div className="sector-bg" aria-hidden style={{ background: "var(--bg)" }} />
 
       {/* ------- night city backdrop ------- */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+      <div className="seam-clip pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
         {/* haze glows behind the skyline */}
         <div
           data-depth="0.12"
@@ -182,8 +182,8 @@ const Hero = () => {
           }}
         />
 
-        {/* neon rain, above skyline */}
-        <NeonRain className="absolute inset-0 h-full w-full" />
+        {/* neon rain / data streams, above skyline */}
+        <SectionBackground variant="hero" />
 
         {/* vertical JP neon sign */}
         <div data-depth="0.32" className="drift absolute right-[6%] top-[22%] hidden lg:block">

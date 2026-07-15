@@ -53,6 +53,7 @@ const CommLink = () => {
       jp="通信"
       status="[CHANNEL OPEN]"
       statusVariant="magenta"
+      bg="comm"
       alt
       zIndex={35}
     >

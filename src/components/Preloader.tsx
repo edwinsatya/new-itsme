@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { gsap, PRELOADER_DONE_EVENT, prefersReducedMotion } from "@/lib/gsap";
+import SectionBackground from "@/components/fx/SectionBackground";
 
 const BOOT_LINES = [
   { text: "INITIALIZING NEURAL LINK", status: "OK" },
@@ -31,6 +32,9 @@ const Preloader = () => {
     };
 
     if (prefersReducedMotion()) {
+      document
+        .querySelectorAll<HTMLElement>(".boot-text")
+        .forEach((el) => (el.textContent = el.dataset.full ?? ""));
       setProgress(100);
       const t = setTimeout(finish, 300);
       return () => {
@@ -45,12 +49,32 @@ const Preloader = () => {
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ onComplete: finish });
 
-      // log lines stamp in — no fades, hard terminal steps
+      // log lines type in over the moving backdrop
       tl.set(".boot-line", { autoAlpha: 0 });
-      tl.to(".boot-line", { autoAlpha: 1, duration: 0.01, stagger: 0.32 }, 0.15);
+      tl.set(".boot-status", { autoAlpha: 0 });
+      gsap.utils.toArray<HTMLElement>(".boot-line").forEach((lineEl, i) => {
+        const textEl = lineEl.querySelector<HTMLElement>(".boot-text");
+        const full = textEl?.dataset.full ?? "";
+        const proxy = { p: 0 };
+        const at = 0.15 + i * 0.42;
+        tl.set(lineEl, { autoAlpha: 1 }, at);
+        tl.to(
+          proxy,
+          {
+            p: 1,
+            duration: 0.32,
+            ease: "none",
+            onUpdate: () => {
+              if (textEl) textEl.textContent = full.slice(0, Math.round(proxy.p * full.length));
+            },
+          },
+          at
+        );
+        tl.set(lineEl.querySelector(".boot-status"), { autoAlpha: 1 }, at + 0.36);
+      });
 
       // progress: uneven, with a stall and one glitch backwards
-      tl.to(counter, { value: 31, duration: 0.5, ease: "power1.inOut", onUpdate: update }, 0.25);
+      tl.to(counter, { value: 31, duration: 0.5, ease: "power1.inOut", onUpdate: update }, 0.3);
       tl.to(".boot-bar", { x: 3, duration: 0.04, repeat: 3, yoyo: true }, ">");
       tl.to(counter, { value: 72, duration: 0.65, ease: "power2.out", onUpdate: update }, ">-0.02");
       tl.to(counter, { value: 67, duration: 0.07, ease: "none", onUpdate: update }, ">+0.14");
@@ -79,6 +103,7 @@ const Preloader = () => {
 
   return (
     <div ref={rootRef} className="fixed inset-0 z-[500] bg-[#06060b]">
+      <SectionBackground variant="hero" className="opacity-50" />
       <div
         className="boot-flash pointer-events-none absolute inset-0 z-10 opacity-0"
         style={{ background: "rgba(0,229,255,0.16)" }}
@@ -97,9 +122,11 @@ const Preloader = () => {
             {BOOT_LINES.map((line) => (
               <p key={line.text} className="boot-line">
                 <span className="mr-2 text-[var(--magenta)]">&gt;</span>
-                {line.text}
-                <span className="mx-2 opacity-40">......</span>
-                <span className="text-[var(--cyan)]">[{line.status}]</span>
+                <span className="boot-text" data-full={line.text} />
+                <span className="boot-status">
+                  <span className="mx-2 opacity-40">......</span>
+                  <span className="text-[var(--cyan)]">[{line.status}]</span>
+                </span>
               </p>
             ))}
           </div>

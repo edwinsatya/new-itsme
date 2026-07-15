@@ -8,7 +8,7 @@ import { services } from "@/constants/profile";
 const ICONS = [Code2, Layers, Cpu];
 
 const Loadout = () => (
-  <Sector id="loadout" index="03" name="LOADOUT" jp="装備" status="[3 PROGRAMS EQUIPPED]" alt zIndex={45}>
+  <Sector id="loadout" index="03" name="LOADOUT" jp="装備" status="[3 PROGRAMS EQUIPPED]" bg="loadout" alt zIndex={45}>
     <h2 className="font-display text-[clamp(2.4rem,6vw,4.8rem)] text-[var(--ink)]">
       <GlitchText as="span" className="glitch--block" text="EQUIPPED" />
       <GlitchText as="span" className="glitch--block md:ml-[7vw]" text="PROGRAMS." delay={0.14} />
@@ -27,11 +27,15 @@ const Loadout = () => (
               <span className="font-mono text-[0.62rem] tracking-[0.24em] text-[var(--faint)]">
                 {service.index}
               </span>
-              <Icon
-                size={22}
-                className="text-[var(--muted)] transition-all duration-300 group-hover:text-[var(--cyan)] group-hover:drop-shadow-[0_0_8px_rgba(0,229,255,0.7)]"
-                aria-hidden
-              />
+              <span className="radar" data-ping>
+                <span className="radar-ring" aria-hidden />
+                <span className="radar-ring radar-ring--late" aria-hidden />
+                <Icon
+                  size={22}
+                  className="text-[var(--muted)] transition-all duration-300 group-hover:text-[var(--cyan)] group-hover:drop-shadow-[0_0_8px_rgba(0,229,255,0.7)]"
+                  aria-hidden
+                />
+              </span>
             </div>
 
             <div className="md:col-span-5">

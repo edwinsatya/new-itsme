@@ -52,13 +52,16 @@ export function useRevealScope<T extends HTMLElement>() {
         });
       });
 
-      gsap.utils.toArray<HTMLElement>(".seam-band, .blink-out").forEach((el) => {
+      gsap.utils.toArray<HTMLElement>(".seam-band, .blink-out, [data-ping]").forEach((el) => {
         ScrollTrigger.create({
           trigger: el,
           start: "top 94%",
           once: true,
-          onEnter: () =>
-            el.classList.add(el.classList.contains("seam-band") ? "banded" : "blinked"),
+          onEnter: () => {
+            if (el.classList.contains("seam-band")) el.classList.add("banded");
+            else if (el.classList.contains("blink-out")) el.classList.add("blinked");
+            else el.classList.add("pinged");
+          },
         });
       });
     }, scope);

@@ -12,7 +12,7 @@ const statusFor = (p: (typeof projects)[number]) => {
 };
 
 const Works = () => (
-  <Sector id="works" index="02" name="JOBS COMPLETED" jp="任務" status="[10 RUNS VERIFIED]" zIndex={50}>
+  <Sector id="works" index="02" name="JOBS COMPLETED" jp="任務" status="[10 RUNS VERIFIED]" bg="runs" zIndex={50}>
     <div className="flex flex-wrap items-end justify-between gap-8">
       <h2 className="font-display text-[clamp(2.4rem,6vw,4.8rem)] text-[var(--ink)]">
         <GlitchText as="span" className="glitch--block" text="MISSION" />

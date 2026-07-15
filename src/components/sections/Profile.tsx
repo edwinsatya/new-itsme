@@ -67,6 +67,7 @@ const Profile = () => {
       name="PROFILE // ID"
       jp="身元"
       status="[DOSSIER DECRYPTED]"
+      bg="profile"
       alt
       zIndex={55}
     >

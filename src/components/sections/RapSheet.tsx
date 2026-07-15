@@ -76,7 +76,7 @@ const RapSheet = () => {
   }, []);
 
   return (
-    <Sector id="log" index="04" name="RAP SHEET" jp="記録" status="[RECORD RETRIEVED]" zIndex={40}>
+    <Sector id="log" index="04" name="RAP SHEET" jp="記録" status="[RECORD RETRIEVED]" bg="log" zIndex={40}>
       <div ref={innerRef}>
         <h2 className="font-display text-[clamp(2.4rem,6vw,4.8rem)] text-[var(--ink)]">
           <GlitchText as="span" className="glitch--block" text="MISSION" />

@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useRevealScope } from "@/hooks/useRevealScope";
+import SectionBackground, { type BackgroundVariant } from "@/components/fx/SectionBackground";
 
 type SectorProps = {
   id: string;
@@ -17,6 +18,8 @@ type SectorProps = {
   flat?: boolean;
   /** tucks this sector under the previous one's diagonal seam */
   overlap?: boolean;
+  /** ambient animated backdrop for this zone of the network */
+  bg?: BackgroundVariant;
   zIndex?: number;
   children: ReactNode;
 };
@@ -42,6 +45,7 @@ const Sector = ({
   alt = false,
   flat = false,
   overlap = true,
+  bg,
   zIndex = 10,
   children,
 }: SectorProps) => {
@@ -60,6 +64,7 @@ const Sector = ({
         aria-hidden
         style={{ background: alt ? "var(--bg-alt)" : "var(--bg)" }}
       />
+      {bg && <SectionBackground variant={bg} />}
       <div className="seam-band" aria-hidden />
 
       <div className="relative z-10 mx-auto max-w-6xl">

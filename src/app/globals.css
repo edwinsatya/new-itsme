@@ -437,6 +437,14 @@ body {
   display: none;
 }
 
+/* animated-canvas layers share the sector's diagonal cut */
+.sector .seam-clip {
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 4rem - 2px), 0 calc(100% - 2px));
+}
+.sector--flat .seam-clip {
+  clip-path: none;
+}
+
 /* signal-cut band that flashes when a sector enters the feed */
 .seam-band {
   position: absolute;
@@ -478,6 +486,20 @@ body {
   border-color: rgba(0, 229, 255, 0.4);
   box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.12), 0 18px 50px -18px rgba(0, 229, 255, 0.18);
   transform: translateY(-4px);
+}
+/* local glow spill — the data-grid around a hovered card lights up */
+.mission-card::after {
+  content: "";
+  position: absolute;
+  inset: -34px;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 42%, rgba(0, 229, 255, 0.1), transparent 68%);
+  opacity: 0;
+  transition: opacity 0.45s;
+}
+.mission-card:hover::after {
+  opacity: 1;
 }
 
 .shot {
@@ -771,6 +793,30 @@ body {
   60% { opacity: 1; transform: none; }
   80% { opacity: 0.6; }
   100% { opacity: 1; }
+}
+
+/* radar ping behind loadout icons on scroll-into-view */
+.radar {
+  position: relative;
+  display: inline-flex;
+}
+.radar-ring {
+  position: absolute;
+  inset: -7px;
+  border: 1px solid rgba(0, 229, 255, 0.5);
+  border-radius: 9999px;
+  opacity: 0;
+  pointer-events: none;
+}
+.pinged .radar-ring {
+  animation: radar-ping 2.4s ease-out 3;
+}
+.pinged .radar-ring--late {
+  animation-delay: 1.2s;
+}
+@keyframes radar-ping {
+  0% { opacity: 0.55; transform: scale(0.5); }
+  100% { opacity: 0; transform: scale(2.7); }
 }
 
 /* slow ambient float for hero set-dressing */
