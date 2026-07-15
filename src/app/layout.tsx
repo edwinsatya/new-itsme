@@ -1,15 +1,16 @@
-import type { Metadata } from "next";
-import { Archivo_Black, Archivo, IBM_Plex_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Bebas_Neue, Chakra_Petch, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-const archivoBlack = Archivo_Black({
+const bebas = Bebas_Neue({
   variable: "--font-display",
   weight: "400",
   subsets: ["latin"],
 });
 
-const archivo = Archivo({
+const chakra = Chakra_Petch({
   variable: "--font-body",
+  weight: ["300", "400", "500", "600"],
   subsets: ["latin"],
 });
 
@@ -22,12 +23,20 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "Edwin Satya Yudistira — Full Stack Developer",
   description:
-    "Full Stack Web Developer specializing in React, Next.js, and modern web technologies. Creating beautiful, functional, and user-centered digital experiences.",
+    "Full Stack Web Developer specializing in React, Next.js, and modern web technologies. Jack into the network — six years of shipped projects, from AI tools to web3 platforms.",
   keywords: "web developer, full stack developer, react, next.js, typescript, portfolio",
   icons: {
-    icon: "/vscode.svg",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.png", type: "image/png", sizes: "128x128" },
+    ],
+    apple: "/favicon.png",
   },
   authors: [{ name: "Edwin" }],
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0a0a0f",
 };
 
 export default function RootLayout({
@@ -37,9 +46,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${archivoBlack.variable} ${archivo.variable} ${plexMono.variable} antialiased`}
-      >
+      <body className={`${bebas.variable} ${chakra.variable} ${plexMono.variable} antialiased`}>
         {children}
       </body>
     </html>

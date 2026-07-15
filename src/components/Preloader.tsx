@@ -1,101 +1,72 @@
 "use client";
 
-import { ReactNode, useEffect, useRef, useState } from "react";
-import { gsap, EASE_IN_OUT, PRELOADER_DONE_EVENT } from "@/lib/gsap";
+import { useEffect, useRef, useState } from "react";
+import { gsap, PRELOADER_DONE_EVENT, prefersReducedMotion } from "@/lib/gsap";
 
-/* Tiny weather glyphs, stroke = currentColor */
-const icon = {
-  night: (
-    <path d="M14 3 A8.5 8.5 0 1 0 21 15 A7 7 0 0 1 14 3 Z" />
-  ),
-  sunny: (
-    <>
-      <circle cx="12" cy="12" r="4.5" />
-      <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1" />
-    </>
-  ),
-  rain: (
-    <>
-      <path d="M7 13a5 5 0 1 1 1.2-9.9A6 6 0 0 1 19 8a3.5 3.5 0 0 1-1 6.9H7Z" />
-      <path d="M8 17.5l-1 3M13 17.5l-1 3M18 17.5l-1 3" />
-    </>
-  ),
-  wind: (
-    <path d="M3 8h11a3 3 0 1 0-3-3M3 13h15a3 3 0 1 1-3 3M3 18h8a2.5 2.5 0 1 1-2.5 2.5" />
-  ),
-  snow: (
-    <path d="M12 3v18M4.5 7.5l15 9M19.5 7.5l-15 9M12 6l-2-2M12 6l2-2M12 18l-2 2M12 18l2 2" />
-  ),
-  rainbow: (
-    <>
-      <path d="M3 20a9 9 0 0 1 18 0" />
-      <path d="M7 20a5 5 0 0 1 10 0" opacity="0.6" />
-    </>
-  ),
-};
-
-const stages: { key: keyof typeof icon; boot: string }[] = [
-  { key: "night", boot: "scanning night sky_" },
-  { key: "sunny", boot: "calibrating sunlight_" },
-  { key: "rain", boot: "tracking rainfall_" },
-  { key: "wind", boot: "measuring wind speed_" },
-  { key: "snow", boot: "detecting snowfall_" },
-  { key: "rainbow", boot: "forecast complete_" },
+const BOOT_LINES = [
+  { text: "INITIALIZING NEURAL LINK", status: "OK" },
+  { text: "LOCATING RUNNER [E.S. YUDISTIRA]", status: "FOUND" },
+  { text: "DECRYPTING PORTFOLIO DATA", status: "OK" },
+  { text: "BYPASSING ICE — 接続完了", status: "CLEAN" },
 ];
 
-const Glyph = ({ children, active }: { children: ReactNode; active: boolean }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={`h-6 w-6 transition-all duration-300 ${
-      active ? "text-[#c0fb50] opacity-100" : "text-[#efeee8] opacity-25"
-    }`}
-  >
-    {children}
-  </svg>
-);
-
+/**
+ * Terminal boot sequence: log lines stamp in, the progress readout
+ * stutters (including one glitch backwards), "ACCESS GRANTED" slams in,
+ * then a hard signal-cut into the hero. Scroll is locked while booting.
+ */
 const Preloader = () => {
   const rootRef = useRef<HTMLDivElement>(null);
+  const accessRef = useRef<HTMLParagraphElement>(null);
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(false);
 
   useEffect(() => {
     document.documentElement.style.overflow = "hidden";
 
+    const finish = () => {
+      document.documentElement.style.overflow = "";
+      window.dispatchEvent(new Event(PRELOADER_DONE_EVENT));
+      setDone(true);
+    };
+
+    if (prefersReducedMotion()) {
+      setProgress(100);
+      const t = setTimeout(finish, 300);
+      return () => {
+        clearTimeout(t);
+        document.documentElement.style.overflow = "";
+      };
+    }
+
     const counter = { value: 0 };
+    const update = () => setProgress(Math.round(counter.value));
+
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({
-        onComplete: () => {
-          document.documentElement.style.overflow = "";
-          window.dispatchEvent(new Event(PRELOADER_DONE_EVENT));
-          setDone(true);
-        },
-      });
+      const tl = gsap.timeline({ onComplete: finish });
 
-      tl.to(counter, {
-        value: 100,
-        duration: 2.4,
-        ease: "power2.inOut",
-        onUpdate: () => setProgress(Math.round(counter.value)),
-      });
+      // log lines stamp in — no fades, hard terminal steps
+      tl.set(".boot-line", { autoAlpha: 0 });
+      tl.to(".boot-line", { autoAlpha: 1, duration: 0.01, stagger: 0.32 }, 0.15);
 
-      tl.to(".preloader-content", {
-        yPercent: -30,
-        opacity: 0,
-        duration: 0.5,
-        ease: "power2.in",
-      });
+      // progress: uneven, with a stall and one glitch backwards
+      tl.to(counter, { value: 31, duration: 0.5, ease: "power1.inOut", onUpdate: update }, 0.25);
+      tl.to(".boot-bar", { x: 3, duration: 0.04, repeat: 3, yoyo: true }, ">");
+      tl.to(counter, { value: 72, duration: 0.65, ease: "power2.out", onUpdate: update }, ">-0.02");
+      tl.to(counter, { value: 67, duration: 0.07, ease: "none", onUpdate: update }, ">+0.14");
+      tl.to(counter, { value: 100, duration: 0.5, ease: "power2.inOut", onUpdate: update }, ">");
 
-      tl.to(rootRef.current, {
-        yPercent: -100,
-        duration: 0.9,
-        ease: EASE_IN_OUT,
-      }, "-=0.15");
+      // ACCESS GRANTED
+      tl.call(() => accessRef.current?.classList.add("glitched"), [], ">-0.05");
+      tl.to({}, { duration: 0.6 });
+
+      // hard cut: two-frame jerk, flash frame, gone
+      tl.to(".boot-wrap", { x: -8, duration: 0.045, ease: "none" });
+      tl.to(".boot-wrap", { x: 6, skewX: 1.5, duration: 0.045, ease: "none" });
+      tl.set(".boot-wrap", { x: 0, skewX: 0 });
+      tl.set(".boot-flash", { opacity: 1 });
+      tl.set(".boot-flash", { opacity: 0 }, "+=0.07");
+      tl.set(rootRef.current, { autoAlpha: 0 }, "+=0.02");
     }, rootRef);
 
     return () => {
@@ -106,78 +77,61 @@ const Preloader = () => {
 
   if (done) return null;
 
-  const stageIndex = Math.min(
-    Math.floor((progress / 100) * stages.length),
-    stages.length - 1
-  );
-
   return (
-    <div
-      ref={rootRef}
-      className="fixed inset-0 z-[200] flex flex-col justify-between bg-[#0e4347] px-6 py-8 md:px-12"
-    >
-      {/* Top bar */}
-      <div className="preloader-content flex items-center justify-between gap-4 font-mono text-[0.65rem] uppercase tracking-[0.25em] text-[rgba(239,238,232,0.6)]">
-        <span className="hidden sm:inline">■ Edwin Satya Yudistira</span>
-        <span className="sm:hidden">■ E.S.Y</span>
-        <span className="text-[#c0fb50]">Weather_OS v3.0</span>
-      </div>
+    <div ref={rootRef} className="fixed inset-0 z-[500] bg-[#06060b]">
+      <div
+        className="boot-flash pointer-events-none absolute inset-0 z-10 opacity-0"
+        style={{ background: "rgba(0,229,255,0.16)" }}
+      />
 
-      {/* Center: radar + boot readout */}
-      <div className="preloader-content flex flex-col items-center gap-10 md:flex-row md:justify-center md:gap-20">
-        {/* Weather radar */}
-        <div className="relative h-40 w-40 md:h-52 md:w-52">
-          <svg viewBox="0 0 100 100" fill="none" stroke="rgba(239,238,232,0.25)" className="h-full w-full">
-            <circle cx="50" cy="50" r="49" strokeWidth="0.6" />
-            <circle cx="50" cy="50" r="34" strokeWidth="0.5" />
-            <circle cx="50" cy="50" r="19" strokeWidth="0.4" />
-            <line x1="50" y1="1" x2="50" y2="99" strokeWidth="0.4" />
-            <line x1="1" y1="50" x2="99" y2="50" strokeWidth="0.4" />
-          </svg>
-          <div className="radar-sweep" />
-          <span className="radar-blip" style={{ left: "30%", top: "38%" }} />
-          <span className="radar-blip" style={{ left: "66%", top: "26%", animationDelay: "0.9s" }} />
-          <span className="radar-blip" style={{ left: "58%", top: "68%", animationDelay: "1.7s" }} />
-          <span className="absolute left-1/2 top-1/2 h-[6px] w-[6px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#c0fb50]" />
+      <div className="boot-wrap flex h-full flex-col justify-between px-6 py-8 md:px-12 md:py-10">
+        {/* top strip */}
+        <div className="flex items-center justify-between font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--muted)]">
+          <span>E.S.Y // NIGHT CITY UPLINK</span>
+          <span className="text-[var(--cyan)]">v4.0_CYB</span>
         </div>
 
-        {/* Boot readout + stage icons */}
-        <div className="flex flex-col items-center gap-6 md:items-start">
-          <p className="font-mono text-xs uppercase tracking-[0.3em] text-[rgba(239,238,232,0.7)]">
-            {stages[stageIndex].boot}
-          </p>
-
-          <div className="flex items-center gap-5">
-            {stages.map((stage, i) => (
-              <Glyph key={stage.key} active={i <= stageIndex}>
-                {icon[stage.key]}
-              </Glyph>
+        {/* boot log */}
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2.5 font-mono text-[0.68rem] uppercase tracking-[0.18em] text-[var(--muted)] md:text-xs">
+            {BOOT_LINES.map((line) => (
+              <p key={line.text} className="boot-line">
+                <span className="mr-2 text-[var(--magenta)]">&gt;</span>
+                {line.text}
+                <span className="mx-2 opacity-40">......</span>
+                <span className="text-[var(--cyan)]">[{line.status}]</span>
+              </p>
             ))}
           </div>
 
-          <p className="font-mono text-[0.62rem] uppercase tracking-[0.25em] text-[rgba(239,238,232,0.45)]">
-            Syncing weather satellites — Lumajang, ID
+          <p
+            ref={accessRef}
+            data-text="ACCESS GRANTED"
+            className="glitch font-display text-[clamp(2.6rem,9vw,6.5rem)] text-[var(--ink)] opacity-0"
+          >
+            ACCESS GRANTED
           </p>
         </div>
-      </div>
 
-      {/* Bottom: progress + counter */}
-      <div className="preloader-content flex flex-col gap-6">
-        <div className="h-px w-full bg-[rgba(239,238,232,0.15)]">
-          <div
-            className="h-full bg-[#c0fb50] transition-[width] duration-100 ease-linear"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-
-        <div className="flex items-end justify-between">
-          <p className="font-mono text-[0.65rem] uppercase tracking-[0.25em] text-[rgba(239,238,232,0.6)]">
-            ■ Forecast loading
-          </p>
-          <span className="font-display text-[clamp(4rem,15vw,9rem)] leading-none text-[#efeee8]">
-            {progress}
-            <span className="text-[#c0fb50]">%</span>
-          </span>
+        {/* progress */}
+        <div className="flex flex-col gap-5">
+          <div className="boot-bar h-[3px] w-full bg-[rgba(232,238,245,0.08)]">
+            <div
+              className="h-full w-full origin-left"
+              style={{
+                transform: `scaleX(${progress / 100})`,
+                background: "linear-gradient(90deg, var(--cyan), var(--magenta))",
+                boxShadow: "0 0 14px rgba(0,229,255,0.4)",
+              }}
+            />
+          </div>
+          <div className="flex items-end justify-between">
+            <p className="hud-label">Jacking into the network — Lumajang, ID</p>
+            <span className="font-display text-[clamp(3rem,11vw,7rem)] leading-none text-[var(--ink)]">
+              {progress}
+              <span className="neon-cyan">%</span>
+            </span>
+          </div>
         </div>
       </div>
     </div>
