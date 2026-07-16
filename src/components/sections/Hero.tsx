@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { gsap, EASE_OUT, PRELOADER_DONE_EVENT, prefersReducedMotion } from "@/lib/gsap";
-import SectionBackground from "@/components/fx/SectionBackground";
+import SectionScene from "@/components/fx/SectionScene";
 import { runner } from "@/constants/profile";
 
 /* deterministic skyline geometry: [x, width, height] — SSR-stable */
@@ -17,7 +17,7 @@ const FRONT_TOWERS: [number, number, number][] = [
   [520, 90, 112], [620, 140, 70], [770, 100, 92], [880, 130, 56], [1020, 90, 122],
   [1120, 110, 66], [1240, 100, 96], [1350, 90, 78],
 ];
-/* lit windows: [x, y, cyan?] with a few that blink */
+/* lit windows: [x, y, primary?] with a few that blink */
 const WINDOWS: [number, number, boolean, boolean][] = [
   [96, 168, true, false], [104, 182, false, false], [330, 138, true, true],
   [338, 152, true, false], [668, 152, false, false], [676, 166, true, false],
@@ -104,98 +104,96 @@ const Hero = () => {
 
   const est = String(runner.est);
 
+  /* night-city scenery — painted under the zone's rain canvas */
+  const backdrop = (
+    <div className="seam-clip pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+      {/* haze glows behind the skyline */}
+      <div
+        data-depth="0.12"
+        className="absolute bottom-[8%] left-[8%] h-64 w-[42%] rounded-full opacity-60 blur-[90px]"
+        style={{ background: "rgba(var(--accent-secondary-rgb),0.14)" }}
+      />
+      <div
+        data-depth="0.18"
+        className="absolute bottom-[4%] right-[4%] h-72 w-[46%] rounded-full opacity-60 blur-[100px]"
+        style={{ background: "rgba(var(--accent-primary-rgb),0.12)" }}
+      />
+
+      {/* skyline — back layer */}
+      <svg
+        data-depth="0.1"
+        data-scroll-speed="0.1"
+        className="absolute bottom-0 left-[-4%] h-[46%] w-[108%]"
+        viewBox="0 0 1440 320"
+        preserveAspectRatio="none"
+      >
+        {BACK_TOWERS.map(([x, w, h]) => (
+          <rect key={`b${x}`} x={x} y={320 - h} width={w} height={h} fill="#0d0d18" />
+        ))}
+        {/* antenna masts */}
+        <rect x="336" y="88" width="2" height="28" fill="#0d0d18" />
+        <rect x="1008" y="78" width="2" height="28" fill="#0d0d18" />
+        <circle cx="337" cy="86" r="2.5" fill="var(--accent-secondary)" opacity="0.8" className="window-blink" />
+        <circle cx="1009" cy="76" r="2.5" fill="var(--accent-primary)" opacity="0.8" className="window-blink" style={{ animationDelay: "2.4s" }} />
+        {WINDOWS.map(([x, y, primary, blinks], i) => (
+          <rect
+            key={`w${x}-${y}`}
+            x={x}
+            y={y}
+            width="4"
+            height="6"
+            fill={primary ? "var(--accent-primary)" : "var(--accent-secondary)"}
+            opacity="0.55"
+            className={blinks ? "window-blink" : undefined}
+            style={blinks ? { animationDelay: `${(i % 5) * 1.3}s` } : undefined}
+          />
+        ))}
+      </svg>
+
+      {/* skyline — front layer */}
+      <svg
+        data-depth="0.22"
+        data-scroll-speed="0.22"
+        className="absolute bottom-0 left-[-4%] h-[30%] w-[108%]"
+        viewBox="0 0 1440 160"
+        preserveAspectRatio="none"
+      >
+        {FRONT_TOWERS.map(([x, w, h]) => (
+          <rect key={`f${x}`} x={x} y={160 - h} width={w} height={h} fill="#060609" />
+        ))}
+      </svg>
+
+      {/* street-level glow line */}
+      <div
+        className="absolute bottom-0 h-px w-full"
+        style={{
+          background: "linear-gradient(90deg, transparent, rgba(var(--accent-primary-rgb),0.5) 30%, rgba(var(--accent-secondary-rgb),0.5) 70%, transparent)",
+          boxShadow: "0 0 24px rgba(var(--accent-primary-rgb),0.25)",
+        }}
+      />
+
+      {/* vertical JP neon sign */}
+      <div data-depth="0.32" className="drift absolute right-[6%] top-[22%] hidden lg:block">
+        <p
+          className="sign-jp text-2xl text-[rgba(var(--accent-secondary-rgb),0.75)]"
+          style={{ textShadow: "0 0 12px rgba(var(--accent-secondary-rgb),0.6), 0 0 40px rgba(var(--accent-secondary-rgb),0.3)" }}
+        >
+          ランナー
+        </p>
+      </div>
+    </div>
+  );
+
   return (
-    <section
+    <SectionScene
+      zone="hero"
       id="home"
       ref={sectionRef}
-      className="sector relative flex min-h-screen flex-col justify-center overflow-hidden"
-      style={{ zIndex: 60, paddingTop: "5.5rem" }}
+      zIndex={60}
+      className="flex min-h-screen flex-col justify-center overflow-hidden"
+      style={{ paddingTop: "5.5rem" }}
+      backdrop={backdrop}
     >
-      {/* diagonal-cut background w/ neon seam (same grammar as sectors) */}
-      <div className="sector-bg-edge" aria-hidden />
-      <div className="sector-bg" aria-hidden style={{ background: "var(--bg)" }} />
-
-      {/* ------- night city backdrop ------- */}
-      <div className="seam-clip pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-        {/* haze glows behind the skyline */}
-        <div
-          data-depth="0.12"
-          className="absolute bottom-[8%] left-[8%] h-64 w-[42%] rounded-full opacity-60 blur-[90px]"
-          style={{ background: "rgba(255,46,136,0.14)" }}
-        />
-        <div
-          data-depth="0.18"
-          className="absolute bottom-[4%] right-[4%] h-72 w-[46%] rounded-full opacity-60 blur-[100px]"
-          style={{ background: "rgba(0,229,255,0.12)" }}
-        />
-
-        {/* skyline — back layer */}
-        <svg
-          data-depth="0.1"
-          data-scroll-speed="0.1"
-          className="absolute bottom-0 left-[-4%] h-[46%] w-[108%]"
-          viewBox="0 0 1440 320"
-          preserveAspectRatio="none"
-        >
-          {BACK_TOWERS.map(([x, w, h]) => (
-            <rect key={`b${x}`} x={x} y={320 - h} width={w} height={h} fill="#0d0d18" />
-          ))}
-          {/* antenna masts */}
-          <rect x="336" y="88" width="2" height="28" fill="#0d0d18" />
-          <rect x="1008" y="78" width="2" height="28" fill="#0d0d18" />
-          <circle cx="337" cy="86" r="2.5" fill="var(--magenta)" opacity="0.8" className="window-blink" />
-          <circle cx="1009" cy="76" r="2.5" fill="var(--cyan)" opacity="0.8" className="window-blink" style={{ animationDelay: "2.4s" }} />
-          {WINDOWS.map(([x, y, cyan, blinks], i) => (
-            <rect
-              key={`w${x}-${y}`}
-              x={x}
-              y={y}
-              width="4"
-              height="6"
-              fill={cyan ? "var(--cyan)" : "var(--magenta)"}
-              opacity="0.55"
-              className={blinks ? "window-blink" : undefined}
-              style={blinks ? { animationDelay: `${(i % 5) * 1.3}s` } : undefined}
-            />
-          ))}
-        </svg>
-
-        {/* skyline — front layer */}
-        <svg
-          data-depth="0.22"
-          data-scroll-speed="0.22"
-          className="absolute bottom-0 left-[-4%] h-[30%] w-[108%]"
-          viewBox="0 0 1440 160"
-          preserveAspectRatio="none"
-        >
-          {FRONT_TOWERS.map(([x, w, h]) => (
-            <rect key={`f${x}`} x={x} y={160 - h} width={w} height={h} fill="#060609" />
-          ))}
-        </svg>
-
-        {/* street-level glow line */}
-        <div
-          className="absolute bottom-0 h-px w-full"
-          style={{
-            background: "linear-gradient(90deg, transparent, rgba(0,229,255,0.5) 30%, rgba(255,46,136,0.5) 70%, transparent)",
-            boxShadow: "0 0 24px rgba(0,229,255,0.25)",
-          }}
-        />
-
-        {/* neon rain / data streams, above skyline */}
-        <SectionBackground variant="hero" />
-
-        {/* vertical JP neon sign */}
-        <div data-depth="0.32" className="drift absolute right-[6%] top-[22%] hidden lg:block">
-          <p
-            className="sign-jp text-2xl text-[rgba(255,46,136,0.75)]"
-            style={{ textShadow: "0 0 12px rgba(255,46,136,0.6), 0 0 40px rgba(255,46,136,0.3)" }}
-          >
-            ランナー
-          </p>
-        </div>
-      </div>
-
       {/* ------- runner ID card ------- */}
       <div className="hero-fade relative z-10 mx-auto w-full max-w-6xl opacity-0">
         <div className="tgt inline-block bg-[rgba(10,10,15,0.55)] p-5 backdrop-blur-[2px]">
@@ -239,7 +237,7 @@ const Hero = () => {
         </h1>
 
         <p
-          className="hero-sign sign font-display mt-6 text-[clamp(1.15rem,3vw,2.1rem)] text-[var(--magenta)] md:ml-[6vw]"
+          className="hero-sign sign font-display mt-6 text-[clamp(1.15rem,3vw,2.1rem)] text-[var(--accent-secondary)] md:ml-[6vw]"
           aria-label="Code. Create. Reimagine."
         >
           ~ CODE. CREATE. REIMAGINE. ~
@@ -262,14 +260,14 @@ const Hero = () => {
           <span className="hud-label hud-label--bare">Scroll to descend</span>
           <span
             className="block h-8 w-px"
-            style={{ background: "linear-gradient(180deg, var(--cyan), transparent)" }}
+            style={{ background: "linear-gradient(180deg, var(--accent-primary), transparent)" }}
           />
         </div>
       </div>
       <p className="hero-fade absolute bottom-16 right-6 z-10 hidden font-mono text-[0.56rem] uppercase tracking-[0.24em] text-[var(--faint)] opacity-0 md:right-10 md:block">
         {runner.role} — EST. {est} — {runner.coords}
       </p>
-    </section>
+    </SectionScene>
   );
 };
 

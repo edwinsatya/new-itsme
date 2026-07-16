@@ -2,7 +2,8 @@
 
 import type { ReactNode } from "react";
 import { useRevealScope } from "@/hooks/useRevealScope";
-import SectionBackground, { type BackgroundVariant } from "@/components/fx/SectionBackground";
+import SectionScene from "@/components/fx/SectionScene";
+import type { ZoneId } from "@/config/zones";
 
 type SectorProps = {
   id: string;
@@ -12,14 +13,12 @@ type SectorProps = {
   jp?: string;
   status?: string;
   statusVariant?: "cyan" | "magenta" | "dim";
-  /** slightly purple-tinted background for alternating depth */
-  alt?: boolean;
   /** last sector: no diagonal cut at the bottom */
   flat?: boolean;
   /** tucks this sector under the previous one's diagonal seam */
   overlap?: boolean;
-  /** ambient animated backdrop for this zone of the network */
-  bg?: BackgroundVariant;
+  /** which district of the city this sector lives in */
+  zone: ZoneId;
   zIndex?: number;
   children: ReactNode;
 };
@@ -31,9 +30,9 @@ const TAG_VARIANT = {
 } as const;
 
 /**
- * Shared "district" shell: diagonal-clipped background with a neon seam,
- * a signal-cut band on entry, and the SECTOR_XX header row. Wires the
- * reveal grammar for everything inside via useRevealScope.
+ * Shared "district" shell: SectionScene (zone accents + fill + ambient
+ * canvas) plus a signal-cut band on entry and the SECTOR_XX header row.
+ * Wires the reveal grammar for everything inside via useRevealScope.
  */
 const Sector = ({
   id,
@@ -42,29 +41,23 @@ const Sector = ({
   jp,
   status,
   statusVariant = "cyan",
-  alt = false,
   flat = false,
   overlap = true,
-  bg,
+  zone,
   zIndex = 10,
   children,
 }: SectorProps) => {
   const scope = useRevealScope<HTMLElement>();
 
   return (
-    <section
+    <SectionScene
+      zone={zone}
       id={id}
       ref={scope}
-      className={`sector ${flat ? "sector--flat" : ""}`}
-      style={{ zIndex, marginTop: overlap ? "-4rem" : undefined }}
+      zIndex={zIndex}
+      flat={flat}
+      overlap={overlap}
     >
-      <div className="sector-bg-edge" aria-hidden />
-      <div
-        className="sector-bg"
-        aria-hidden
-        style={{ background: alt ? "var(--bg-alt)" : "var(--bg)" }}
-      />
-      {bg && <SectionBackground variant={bg} />}
       <div className="seam-band" aria-hidden />
 
       <div className="relative z-10 mx-auto max-w-6xl">
@@ -84,7 +77,7 @@ const Sector = ({
         <div data-reveal className="chrome-line mb-14" />
         {children}
       </div>
-    </section>
+    </SectionScene>
   );
 };
 

@@ -20,6 +20,25 @@
   --line-magenta: rgba(255, 46, 136, 0.3);
   --glow-cyan: 0 0 8px rgba(0, 229, 255, 0.55), 0 0 28px rgba(0, 229, 255, 0.22);
   --glow-magenta: 0 0 8px rgba(255, 46, 136, 0.55), 0 0 28px rgba(255, 46, 136, 0.22);
+
+  /* ---- zone accent system ----------------------------------------
+     Components inside a SectionScene read these; each scene overrides
+     them locally (see src/config/zones.ts). Root defaults keep any
+     un-zoned UI on the classic cyan/magenta duo. */
+  --accent-primary: var(--cyan);
+  --accent-primary-rgb: 0, 229, 255;
+  --accent-secondary: var(--magenta);
+  --accent-secondary-rgb: 255, 46, 136;
+  --glow-color: rgba(var(--accent-primary-rgb), 0.55);
+  --glow-accent: 0 0 8px rgba(var(--accent-primary-rgb), 0.55),
+    0 0 28px rgba(var(--accent-primary-rgb), 0.22);
+  --glow-accent-2: 0 0 8px rgba(var(--accent-secondary-rgb), 0.55),
+    0 0 28px rgba(var(--accent-secondary-rgb), 0.22);
+  --line-accent: rgba(var(--accent-primary-rgb), 0.28);
+  /* accent of the zone currently on screen — WarpDirector keeps these
+     in sync for fixed chrome (companion, scroll bar, warp overlay) */
+  --live-accent: #4c6fff;
+  --live-accent-rgb: 76, 111, 255;
   --chrome: linear-gradient(115deg, #46505e 0%, #9fb0c2 28%, #e9f1fa 47%, #6d7a8a 68%, #38404c 100%);
   --ease-hud: cubic-bezier(0.22, 1, 0.36, 1);
   /* decorative JP signage rides on system fonts — no webfont cost */
@@ -79,7 +98,7 @@ body {
 }
 
 :focus-visible {
-  outline: 1px solid var(--cyan);
+  outline: 1px solid var(--accent-primary);
   outline-offset: 3px;
 }
 
@@ -107,21 +126,22 @@ body {
   content: "";
   width: 5px;
   height: 5px;
-  background: var(--cyan);
-  box-shadow: 0 0 6px rgba(0, 229, 255, 0.6);
+  background: var(--accent-primary);
+  box-shadow: 0 0 6px rgba(var(--accent-primary-rgb), 0.6);
   flex-shrink: 0;
 }
 .hud-label--bare::before {
   display: none;
 }
 
+/* zone-aware: primary/secondary accent of the local district */
 .neon-cyan {
-  color: var(--cyan);
-  text-shadow: var(--glow-cyan);
+  color: var(--accent-primary);
+  text-shadow: var(--glow-accent);
 }
 .neon-magenta {
-  color: var(--magenta);
-  text-shadow: var(--glow-magenta);
+  color: var(--accent-secondary);
+  text-shadow: var(--glow-accent-2);
 }
 
 /* Hollow display text — oversized background words */
@@ -149,15 +169,15 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.2em;
   padding: 3px 9px;
-  color: var(--cyan);
-  border: 1px solid rgba(0, 229, 255, 0.35);
-  background: rgba(0, 229, 255, 0.05);
+  color: var(--accent-primary);
+  border: 1px solid rgba(var(--accent-primary-rgb), 0.35);
+  background: rgba(var(--accent-primary-rgb), 0.05);
   white-space: nowrap;
 }
 .tag--m {
-  color: var(--magenta);
-  border-color: rgba(255, 46, 136, 0.4);
-  background: rgba(255, 46, 136, 0.05);
+  color: var(--accent-secondary);
+  border-color: rgba(var(--accent-secondary-rgb), 0.4);
+  background: rgba(var(--accent-secondary-rgb), 0.05);
 }
 .tag--dim {
   color: var(--muted);
@@ -183,7 +203,7 @@ body {
    (8 background gradients: an L in each corner)
    ============================================================ */
 .tgt {
-  --tgt-c: rgba(0, 229, 255, 0.4);
+  --tgt-c: rgba(var(--accent-primary-rgb), 0.4);
   --tgt-w: 14px;
   --tgt-t: 1px;
   background-image:
@@ -209,7 +229,7 @@ body {
 }
 .mission-card:hover .tgt,
 .tgt-hot {
-  --tgt-c: var(--cyan);
+  --tgt-c: var(--accent-primary);
 }
 
 /* ============================================================
@@ -234,11 +254,11 @@ body {
   pointer-events: none;
 }
 .glitch::before {
-  color: var(--cyan);
+  color: var(--accent-primary);
   z-index: -1;
 }
 .glitch::after {
-  color: var(--magenta);
+  color: var(--accent-secondary);
   z-index: -2;
 }
 
@@ -286,10 +306,10 @@ body {
 }
 .sign.sign-on {
   animation: neon-boot 1.15s steps(1, end) both;
-  text-shadow: var(--glow-magenta);
+  text-shadow: var(--glow-accent-2);
 }
 .sign.sign-on.sign--cyan {
-  text-shadow: var(--glow-cyan);
+  text-shadow: var(--glow-accent);
 }
 @keyframes neon-boot {
   0% { opacity: 0; text-shadow: none; }
@@ -328,28 +348,30 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.22em;
   padding: 0.95rem 1.6rem;
-  color: var(--cyan);
-  border: 1px solid rgba(0, 229, 255, 0.45);
-  background: rgba(0, 229, 255, 0.06);
+  color: var(--accent-primary);
+  border: 1px solid rgba(var(--accent-primary-rgb), 0.45);
+  background: rgba(var(--accent-primary-rgb), 0.06);
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 11px), calc(100% - 11px) 100%, 0 100%);
   transition: background 0.3s, box-shadow 0.3s, color 0.3s, text-shadow 0.3s;
 }
 .btn-neon:hover {
   animation: hover-flick 0.3s steps(1, end);
-  background: rgba(0, 229, 255, 0.13);
-  box-shadow: inset 0 0 18px rgba(0, 229, 255, 0.14), 0 0 22px rgba(0, 229, 255, 0.22);
-  text-shadow: 0 0 8px rgba(0, 229, 255, 0.6);
+  background: rgba(var(--accent-primary-rgb), 0.13);
+  box-shadow: inset 0 0 18px rgba(var(--accent-primary-rgb), 0.14),
+    0 0 22px rgba(var(--accent-primary-rgb), 0.22);
+  text-shadow: 0 0 8px rgba(var(--accent-primary-rgb), 0.6);
 }
 
 .btn-neon--m {
-  color: var(--magenta);
-  border-color: rgba(255, 46, 136, 0.5);
-  background: rgba(255, 46, 136, 0.07);
+  color: var(--accent-secondary);
+  border-color: rgba(var(--accent-secondary-rgb), 0.5);
+  background: rgba(var(--accent-secondary-rgb), 0.07);
 }
 .btn-neon--m:hover {
-  background: rgba(255, 46, 136, 0.15);
-  box-shadow: inset 0 0 18px rgba(255, 46, 136, 0.15), 0 0 22px rgba(255, 46, 136, 0.24);
-  text-shadow: 0 0 8px rgba(255, 46, 136, 0.6);
+  background: rgba(var(--accent-secondary-rgb), 0.15);
+  box-shadow: inset 0 0 18px rgba(var(--accent-secondary-rgb), 0.15),
+    0 0 22px rgba(var(--accent-secondary-rgb), 0.24);
+  text-shadow: 0 0 8px rgba(var(--accent-secondary-rgb), 0.6);
 }
 
 /* chrome-rimmed variant — "wet street reflection", used sparingly */
@@ -381,14 +403,14 @@ body {
   right: 0;
   bottom: -5px;
   height: 1px;
-  background: var(--cyan);
-  box-shadow: 0 0 8px rgba(0, 229, 255, 0.7);
+  background: var(--accent-primary);
+  box-shadow: 0 0 8px rgba(var(--accent-primary-rgb), 0.7);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.35s var(--ease-hud);
 }
 .link-neon:hover {
-  color: var(--cyan);
+  color: var(--accent-primary);
   animation: hover-flick 0.3s steps(1, end);
 }
 .link-neon:hover::after {
@@ -423,7 +445,7 @@ body {
   pointer-events: none;
 }
 .sector-bg-edge {
-  background: linear-gradient(90deg, transparent 2%, var(--line-cyan) 30%, var(--line-cyan) 70%, transparent 98%);
+  background: linear-gradient(90deg, transparent 2%, var(--line-accent) 30%, var(--line-accent) 70%, transparent 98%);
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 4rem), 0 100%);
 }
 .sector-bg {
@@ -456,9 +478,9 @@ body {
   pointer-events: none;
   background: repeating-linear-gradient(
     0deg,
-    rgba(0, 229, 255, 0.1) 0 2px,
+    rgba(var(--accent-primary-rgb), 0.1) 0 2px,
     transparent 2px 7px,
-    rgba(255, 46, 136, 0.08) 7px 9px,
+    rgba(var(--accent-secondary-rgb), 0.08) 7px 9px,
     transparent 9px 15px
   );
 }
@@ -483,8 +505,9 @@ body {
   transition: border-color 0.35s, box-shadow 0.35s, transform 0.35s var(--ease-hud);
 }
 .mission-card:hover {
-  border-color: rgba(0, 229, 255, 0.4);
-  box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.12), 0 18px 50px -18px rgba(0, 229, 255, 0.18);
+  border-color: rgba(var(--accent-primary-rgb), 0.4);
+  box-shadow: 0 0 0 1px rgba(var(--accent-primary-rgb), 0.12),
+    0 18px 50px -18px rgba(var(--accent-primary-rgb), 0.18);
   transform: translateY(-4px);
 }
 /* local glow spill — the data-grid around a hovered card lights up */
@@ -494,7 +517,7 @@ body {
   inset: -34px;
   z-index: -1;
   pointer-events: none;
-  background: radial-gradient(ellipse at 50% 42%, rgba(0, 229, 255, 0.1), transparent 68%);
+  background: radial-gradient(ellipse at 50% 42%, rgba(var(--accent-primary-rgb), 0.1), transparent 68%);
   opacity: 0;
   transition: opacity 0.45s;
 }
@@ -580,10 +603,11 @@ body {
 }
 .chip:hover {
   animation: hover-flick 0.3s steps(1, end);
-  border-color: rgba(0, 229, 255, 0.55);
-  color: var(--cyan);
-  box-shadow: 0 0 14px rgba(0, 229, 255, 0.18), inset 0 0 10px rgba(0, 229, 255, 0.06);
-  text-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
+  border-color: rgba(var(--accent-primary-rgb), 0.55);
+  color: var(--accent-primary);
+  box-shadow: 0 0 14px rgba(var(--accent-primary-rgb), 0.18),
+    inset 0 0 10px rgba(var(--accent-primary-rgb), 0.06);
+  text-shadow: 0 0 8px rgba(var(--accent-primary-rgb), 0.5);
 }
 .chip--xs {
   font-size: 0.56rem;
@@ -609,9 +633,10 @@ body {
 }
 .field-term:focus {
   outline: none;
-  border-color: rgba(0, 229, 255, 0.55);
-  background: rgba(0, 229, 255, 0.03);
-  box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.3), 0 0 20px rgba(0, 229, 255, 0.12);
+  border-color: rgba(var(--accent-primary-rgb), 0.55);
+  background: rgba(var(--accent-primary-rgb), 0.03);
+  box-shadow: 0 0 0 1px rgba(var(--accent-primary-rgb), 0.3),
+    0 0 20px rgba(var(--accent-primary-rgb), 0.12);
 }
 
 /* ============================================================
@@ -627,8 +652,8 @@ body {
   position: absolute;
   inset: 0;
   transform-origin: left;
-  background: linear-gradient(90deg, rgba(0, 229, 255, 0.2), var(--cyan));
-  box-shadow: 0 0 14px rgba(0, 229, 255, 0.35);
+  background: linear-gradient(90deg, rgba(var(--accent-primary-rgb), 0.2), var(--accent-primary));
+  box-shadow: 0 0 14px rgba(var(--accent-primary-rgb), 0.35);
 }
 /* JS animates to the real level; without JS the bar stays full-width */
 .js-fx .meter-fill {
@@ -640,8 +665,9 @@ body {
   top: -3px;
   bottom: -3px;
   width: 3px;
-  background: #d8fbff;
-  box-shadow: 0 0 10px rgba(0, 229, 255, 0.9), 0 0 26px rgba(0, 229, 255, 0.5);
+  background: #eef7ff;
+  box-shadow: 0 0 10px rgba(var(--accent-primary-rgb), 0.9),
+    0 0 26px rgba(var(--accent-primary-rgb), 0.5);
   opacity: 0;
 }
 .meter-fill.meter-hot .meter-head {
@@ -771,7 +797,7 @@ body {
 .caret::after {
   content: "▮";
   margin-left: 0.35em;
-  color: var(--cyan);
+  color: var(--accent-primary);
   animation: caret-blink 0.9s steps(1, end) infinite;
 }
 @keyframes caret-blink {
@@ -803,7 +829,7 @@ body {
 .radar-ring {
   position: absolute;
   inset: -7px;
-  border: 1px solid rgba(0, 229, 255, 0.5);
+  border: 1px solid rgba(var(--accent-primary-rgb), 0.5);
   border-radius: 9999px;
   opacity: 0;
   pointer-events: none;
@@ -838,6 +864,114 @@ body {
 }
 
 /* ============================================================
+   DIMENSION JUMP — warp overlay fired at zone boundaries
+   (sits under the CRT scanlines so the flash reads in-feed)
+   ============================================================ */
+.warp-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 85;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden; /* GSAP autoAlpha drives this */
+}
+.warp-veil {
+  position: absolute;
+  inset: 0;
+  background: #05050a;
+  opacity: 0;
+}
+.warp-flash {
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: screen;
+  opacity: 0;
+  /* background set per-jump: white core tinted with the incoming zone */
+}
+.warp-fringe {
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: screen;
+  opacity: 0;
+  will-change: transform;
+}
+.warp-slice {
+  position: absolute;
+  left: -2%;
+  width: 104%;
+  opacity: 0;
+  will-change: transform;
+  /* chromatic fringing on each tear */
+  box-shadow: -5px 0 0 rgba(255, 42, 60, 0.35), 5px 0 0 rgba(0, 190, 255, 0.35);
+}
+
+/* ============================================================
+   COMPANION — drone unit riding shotgun through the districts
+   ============================================================ */
+.companion {
+  position: fixed;
+  right: 1rem;
+  bottom: 1.25rem;
+  z-index: 120;
+  pointer-events: none;
+  opacity: 0; /* pops in once the preloader signs off */
+  transform: translateY(8px);
+  transition: opacity 0.5s var(--ease-hud), transform 0.5s var(--ease-hud);
+}
+.companion.is-live {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (min-width: 768px) {
+  .companion {
+    right: 1.5rem;
+    bottom: 3.4rem; /* clears the HUD footer bar */
+  }
+}
+.companion-canvas {
+  display: block;
+  filter: drop-shadow(0 0 10px rgba(var(--live-accent-rgb), 0.35));
+}
+.companion-bubble {
+  position: absolute;
+  right: calc(100% - 8px);
+  bottom: calc(100% - 18px);
+  width: max-content;
+  max-width: min(240px, 62vw);
+  padding: 0.55rem 0.8rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.62rem;
+  line-height: 1.55;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: rgba(6, 6, 12, 0.88);
+  border: 1px solid rgba(var(--live-accent-rgb), 0.45);
+  box-shadow: 0 0 18px rgba(var(--live-accent-rgb), 0.16);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 9px 100%, 0 calc(100% - 9px));
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.25s var(--ease-hud), transform 0.25s var(--ease-hud);
+}
+.companion-bubble.is-open {
+  opacity: 1;
+  transform: translateY(0);
+}
+.companion-bubble .bubble-tag {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-size: 0.52rem;
+  letter-spacing: 0.22em;
+  color: rgba(var(--live-accent-rgb), 0.9);
+}
+.companion-bubble.is-typing .bubble-text::after {
+  content: "▮";
+  margin-left: 0.3em;
+  color: rgba(var(--live-accent-rgb), 0.9);
+  animation: caret-blink 0.7s steps(1, end) infinite;
+}
+
+/* ============================================================
    REDUCED MOTION — kill the theatrics, keep the content
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
@@ -857,6 +991,12 @@ body {
   }
   .crt-sweep,
   .crt-grain {
+    display: none;
+  }
+  /* jumps become plain cuts — no flash spike, tears, or shake */
+  .warp-flash,
+  .warp-fringe,
+  .warp-slice {
     display: none;
   }
 }

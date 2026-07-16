@@ -12,7 +12,7 @@ const statusFor = (p: (typeof projects)[number]) => {
 };
 
 const Works = () => (
-  <Sector id="works" index="02" name="JOBS COMPLETED" jp="任務" status="[10 RUNS VERIFIED]" bg="runs" zIndex={50}>
+  <Sector id="works" index="02" name="JOBS COMPLETED" jp="任務" status="[10 RUNS VERIFIED]" zone="runs" zIndex={50}>
     <div className="flex flex-wrap items-end justify-between gap-8">
       <h2 className="font-display text-[clamp(2.4rem,6vw,4.8rem)] text-[var(--ink)]">
         <GlitchText as="span" className="glitch--block" text="MISSION" />
@@ -20,7 +20,7 @@ const Works = () => (
       </h2>
       <p data-reveal className="max-w-sm text-sm leading-relaxed text-[var(--muted)]">
         Ten verified runs — AI tools, dashboards, web3 platforms. Hover a file to
-        decrypt the preview; <span className="text-[var(--cyan)]">ACCESS RUN</span> jacks
+        decrypt the preview; <span className="text-[var(--accent-primary)]">ACCESS RUN</span> jacks
         you into the live build.
       </p>
     </div>
@@ -43,13 +43,13 @@ const Works = () => (
             <div
               className="shot-rgb shot-rgb--c"
               style={{
-                backgroundImage: `linear-gradient(rgba(0,229,255,0.35), rgba(0,229,255,0.35)), url(${project.image})`,
+                backgroundImage: `linear-gradient(rgba(var(--accent-primary-rgb),0.35), rgba(var(--accent-primary-rgb),0.35)), url(${project.image})`,
               }}
             />
             <div
               className="shot-rgb shot-rgb--m"
               style={{
-                backgroundImage: `linear-gradient(rgba(255,46,136,0.35), rgba(255,46,136,0.35)), url(${project.image})`,
+                backgroundImage: `linear-gradient(rgba(var(--accent-secondary-rgb),0.35), rgba(var(--accent-secondary-rgb),0.35)), url(${project.image})`,
               }}
             />
             <div className="shot-veil" />
@@ -77,7 +77,7 @@ const Works = () => (
                 <span className={status.cls}>{status.label}</span>
               </div>
 
-              <h3 className="font-display text-2xl text-[var(--ink)] transition-colors duration-300 group-hover:text-[var(--cyan)] md:text-3xl">
+              <h3 className="font-display text-2xl text-[var(--ink)] transition-colors duration-300 group-hover:text-[var(--accent-primary)] md:text-3xl">
                 {project.title}
               </h3>
 
@@ -102,7 +102,7 @@ const Works = () => (
                     href={project.live}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="link-neon font-mono text-[0.62rem] uppercase tracking-[0.22em] text-[var(--cyan)]"
+                    className="link-neon font-mono text-[0.62rem] uppercase tracking-[0.22em] text-[var(--accent-primary)]"
                   >
                     Access run ↗
                   </a>

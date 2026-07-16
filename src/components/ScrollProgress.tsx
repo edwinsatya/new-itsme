@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "@/lib/gsap";
 
-/** 2px cyan→magenta signal bar tracking scroll position. */
+/** 2px signal bar tracking scroll position, tinted by the live district. */
 const ScrollProgress = () => {
   const barRef = useRef<HTMLDivElement>(null);
 
@@ -36,8 +36,10 @@ const ScrollProgress = () => {
         ref={barRef}
         className="h-full w-full"
         style={{
-          background: "linear-gradient(90deg, var(--cyan), var(--magenta))",
-          boxShadow: "0 0 12px rgba(0,229,255,0.45)",
+          background:
+            "linear-gradient(90deg, rgba(var(--live-accent-rgb),0.45), var(--live-accent))",
+          boxShadow: "0 0 12px rgba(var(--live-accent-rgb),0.45)",
+          transition: "background 0.4s, box-shadow 0.4s",
         }}
       />
     </div>

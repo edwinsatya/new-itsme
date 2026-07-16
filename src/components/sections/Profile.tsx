@@ -67,8 +67,7 @@ const Profile = () => {
       name="PROFILE // ID"
       jp="身元"
       status="[DOSSIER DECRYPTED]"
-      bg="profile"
-      alt
+      zone="profile"
       zIndex={55}
     >
       <div ref={innerRef}>

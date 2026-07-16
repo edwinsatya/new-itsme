@@ -76,7 +76,7 @@ const RapSheet = () => {
   }, []);
 
   return (
-    <Sector id="log" index="04" name="RAP SHEET" jp="記録" status="[RECORD RETRIEVED]" bg="log" zIndex={40}>
+    <Sector id="log" index="04" name="RAP SHEET" jp="記録" status="[RECORD RETRIEVED]" zone="log" zIndex={40}>
       <div ref={innerRef}>
         <h2 className="font-display text-[clamp(2.4rem,6vw,4.8rem)] text-[var(--ink)]">
           <GlitchText as="span" className="glitch--block" text="MISSION" />
@@ -95,8 +95,8 @@ const RapSheet = () => {
                 <div
                   className="log-spine h-full w-px"
                   style={{
-                    background: "linear-gradient(180deg, var(--cyan), var(--magenta))",
-                    boxShadow: "0 0 8px rgba(0,229,255,0.4)",
+                    background: "linear-gradient(180deg, var(--accent-primary), var(--accent-secondary))",
+                    boxShadow: "0 0 8px rgba(var(--accent-primary-rgb),0.4)",
                   }}
                 />
               </div>
@@ -105,19 +105,19 @@ const RapSheet = () => {
                 {experiences.map((exp, i) => (
                   <div key={exp.company} data-reveal className="relative">
                     <span
-                      className="absolute -left-[2.28rem] top-1.5 h-2 w-2 rotate-45 bg-[var(--cyan)]"
-                      style={{ boxShadow: "0 0 8px rgba(0,229,255,0.7)" }}
+                      className="absolute -left-[2.28rem] top-1.5 h-2 w-2 rotate-45 bg-[var(--accent-primary)]"
+                      style={{ boxShadow: "0 0 8px rgba(var(--accent-primary-rgb),0.7)" }}
                       aria-hidden
                     />
                     <p className="font-mono text-[0.6rem] uppercase tracking-[0.24em] text-[var(--faint)]">
                       LOG_{String(experiences.length - i).padStart(2, "0")}
                       <span className="mx-2 opacity-40">{"//"}</span>
-                      <span className="text-[var(--cyan)]">{exp.period}</span>
+                      <span className="text-[var(--accent-primary)]">{exp.period}</span>
                     </p>
                     <h4 className="font-display mt-2.5 text-xl text-[var(--ink)] md:text-2xl">
                       {exp.position}
                     </h4>
-                    <p className="mt-1 font-mono text-xs tracking-[0.06em] text-[var(--magenta)]">
+                    <p className="mt-1 font-mono text-xs tracking-[0.06em] text-[var(--accent-secondary)]">
                       @ {exp.company}
                     </p>
                     <p className="mt-3 max-w-lg text-sm leading-relaxed text-[var(--muted)]">
@@ -152,7 +152,7 @@ const RapSheet = () => {
                 <div key={group.category} data-reveal>
                   <div className="mb-3 flex items-baseline justify-between">
                     <h4 className="font-display text-lg text-[var(--ink)]">{group.category}</h4>
-                    <span className="meter-val font-mono text-xs text-[var(--cyan)]" data-level={String(group.level)}>
+                    <span className="meter-val font-mono text-xs text-[var(--accent-primary)]" data-level={String(group.level)}>
                       0%
                     </span>
                   </div>
@@ -183,7 +183,7 @@ const RapSheet = () => {
                 {certifications.map((certificate, i) => (
                   <li key={certificate} className="flex items-center justify-between gap-4">
                     <span className="flex items-baseline gap-3">
-                      <span className="font-mono text-[0.6rem] tracking-[0.2em] text-[var(--magenta)]">
+                      <span className="font-mono text-[0.6rem] tracking-[0.2em] text-[var(--accent-secondary)]">
                         LV.{String(i + 1).padStart(2, "0")}
                       </span>
                       <span className="text-sm text-[var(--ink)] md:text-base">{certificate}</span>

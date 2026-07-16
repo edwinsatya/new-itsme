@@ -8,7 +8,7 @@ import { services } from "@/constants/profile";
 const ICONS = [Code2, Layers, Cpu];
 
 const Loadout = () => (
-  <Sector id="loadout" index="03" name="LOADOUT" jp="装備" status="[3 PROGRAMS EQUIPPED]" bg="loadout" alt zIndex={45}>
+  <Sector id="loadout" index="03" name="LOADOUT" jp="装備" status="[3 PROGRAMS EQUIPPED]" zone="loadout" zIndex={45}>
     <h2 className="font-display text-[clamp(2.4rem,6vw,4.8rem)] text-[var(--ink)]">
       <GlitchText as="span" className="glitch--block" text="EQUIPPED" />
       <GlitchText as="span" className="glitch--block md:ml-[7vw]" text="PROGRAMS." delay={0.14} />
@@ -32,14 +32,14 @@ const Loadout = () => (
                 <span className="radar-ring radar-ring--late" aria-hidden />
                 <Icon
                   size={22}
-                  className="text-[var(--muted)] transition-all duration-300 group-hover:text-[var(--cyan)] group-hover:drop-shadow-[0_0_8px_rgba(0,229,255,0.7)]"
+                  className="text-[var(--muted)] transition-all duration-300 group-hover:text-[var(--accent-primary)] group-hover:drop-shadow-[0_0_8px_rgba(var(--accent-primary-rgb),0.7)]"
                   aria-hidden
                 />
               </span>
             </div>
 
             <div className="md:col-span-5">
-              <h3 className="font-display text-[clamp(1.5rem,3vw,2.5rem)] leading-none text-[var(--ink)] transition-colors duration-300 group-hover:text-[var(--cyan)]">
+              <h3 className="font-display text-[clamp(1.5rem,3vw,2.5rem)] leading-none text-[var(--ink)] transition-colors duration-300 group-hover:text-[var(--accent-primary)]">
                 {service.title}
               </h3>
               <span className="tag mt-4 hidden md:inline-flex">[EQUIPPED]</span>

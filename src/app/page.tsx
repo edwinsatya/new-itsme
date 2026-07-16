@@ -4,6 +4,8 @@ import Cursor from "@/components/Cursor";
 import Scanlines from "@/components/Scanlines";
 import ScrollProgress from "@/components/ScrollProgress";
 import HUDFrame from "@/components/HUDFrame";
+import WarpDirector from "@/components/fx/WarpDirector";
+import Companion from "@/components/companion/Companion";
 import Hero from "@/components/sections/Hero";
 import Profile from "@/components/sections/Profile";
 import Works from "@/components/sections/Works";
@@ -21,13 +23,18 @@ export default function Home() {
       <Cursor />
       <Scanlines />
       <HUDFrame />
-      <Hero />
-      <Profile />
-      <Works />
-      <Loadout />
-      <RapSheet />
-      <CommLink />
-      <Outro />
+      {/* the world — WarpDirector shakes this on a jump; fixed chrome stays outside */}
+      <div id="zone-stage">
+        <Hero />
+        <Profile />
+        <Works />
+        <Loadout />
+        <RapSheet />
+        <CommLink />
+        <Outro />
+      </div>
+      <WarpDirector />
+      <Companion />
     </main>
   );
 }

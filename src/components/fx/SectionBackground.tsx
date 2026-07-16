@@ -2,20 +2,18 @@
 
 import { useEffect, useRef } from "react";
 import { prefersReducedMotion } from "@/lib/gsap";
+import { ZONES, type ZoneId } from "@/config/zones";
 
-export type BackgroundVariant =
-  | "hero"
-  | "profile"
-  | "runs"
-  | "loadout"
-  | "log"
-  | "comm"
-  | "outro";
+export type BackgroundVariant = ZoneId;
 
-/* One color language everywhere: cyan + magenta neon over blue-white haze. */
-const CYAN = "0,229,255";
-const MAGENTA = "255,46,136";
-const HAZE = "168,198,228";
+/**
+ * One drawing language everywhere — thin lines, dots, glyphs — with the
+ * district's palette injected per zone (see src/config/zones.ts).
+ * `a` = primary accent, `b` = secondary; HAZE is the shared blue-white
+ * city atmosphere that keeps every district feeling like the same city.
+ */
+type Palette = { a: string; b: string };
+const HAZE = "168, 198, 228";
 
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
 const pick = <T,>(arr: readonly T[]) => arr[Math.floor(Math.random() * arr.length)];
@@ -27,6 +25,8 @@ interface Renderer {
   drawStatic(ctx: Ctx2D): void;
   /** called when the section re-enters the viewport */
   reset?(t: number): void;
+  /** pointer hint from the host section (runs: card-hover glow) */
+  pointer?(x: number, y: number, active: boolean): void;
   /** set true when a one-shot sequence (outro power-down) has ended */
   finished?: boolean;
 }
@@ -34,12 +34,12 @@ interface Renderer {
 /* ------------------------------------------------------------------ */
 /* hero — slow neon rain / data streaks with depth via speed + alpha   */
 /* ------------------------------------------------------------------ */
-function createRain(w: number, h: number): Renderer {
+function createRain(w: number, h: number, pal: Palette): Renderer {
   type Drop = { x: number; y: number; len: number; vy: number; a: number; col: string };
   const col = () => {
     const r = Math.random();
-    if (r < 0.1) return MAGENTA;
-    if (r < 0.26) return CYAN;
+    if (r < 0.1) return pal.b;
+    if (r < 0.26) return pal.a;
     return HAZE;
   };
   const spawn = (initial: boolean): Drop => ({
@@ -86,7 +86,7 @@ function createRain(w: number, h: number): Renderer {
 /* ------------------------------------------------------------------ */
 /* profile — circuit traces pinging outward from nodes + slow sweep    */
 /* ------------------------------------------------------------------ */
-function createCircuit(w: number, h: number): Renderer {
+function createCircuit(w: number, h: number, pal: Palette): Renderer {
   type Trace = {
     pts: { x: number; y: number }[];
     lens: number[];
@@ -125,7 +125,7 @@ function createCircuit(w: number, h: number): Renderer {
       p: 0,
       speed: rand(0.4, 0.7),
       fade: 1,
-      col: Math.random() < 0.2 ? MAGENTA : CYAN,
+      col: Math.random() < 0.2 ? pal.b : pal.a,
     };
   };
 
@@ -195,9 +195,9 @@ function createCircuit(w: number, h: number): Renderer {
       const band = 110;
       const y = ((t * 34) % (h + band * 2)) - band;
       const g = ctx.createLinearGradient(0, y, 0, y + band);
-      g.addColorStop(0, `rgba(${CYAN},0)`);
-      g.addColorStop(0.5, `rgba(${CYAN},0.035)`);
-      g.addColorStop(1, `rgba(${CYAN},0)`);
+      g.addColorStop(0, `rgba(${pal.a},0)`);
+      g.addColorStop(0.5, `rgba(${pal.a},0.035)`);
+      g.addColorStop(1, `rgba(${pal.a},0)`);
       ctx.fillStyle = g;
       ctx.fillRect(0, y, w, band);
     },
@@ -214,9 +214,10 @@ function createCircuit(w: number, h: number): Renderer {
 }
 
 /* ------------------------------------------------------------------ */
-/* runs — perspective data-floor grid with a slow forward drift        */
+/* runs — perspective data-floor grid; glows brighter near a hovered   */
+/* mission card (pointer() fed by the host section)                    */
 /* ------------------------------------------------------------------ */
-function createGrid(w: number, h: number): Renderer {
+function createGrid(w: number, h: number, pal: Palette): Renderer {
   const horizon = h * 0.36;
   const vpX = w / 2;
   const V = 22;
@@ -227,6 +228,15 @@ function createGrid(w: number, h: number): Renderer {
     a: rand(0.03, 0.08),
   }));
 
+  // card-hover hotspot — level eases toward target in draw()
+  const hot = { x: 0, y: 0, level: 0, target: 0 };
+  const glowAt = (x: number, y: number) => {
+    if (hot.level <= 0.02) return 0;
+    const dx = x - hot.x;
+    const dy = y - hot.y;
+    return hot.level * Math.exp(-(dx * dx + dy * dy) / 52000); // σ ≈ 160px
+  };
+
   const paint = (ctx: Ctx2D, phase: number) => {
     ctx.fillStyle = `rgba(${HAZE},1)`;
     for (const s of stars) {
@@ -236,7 +246,7 @@ function createGrid(w: number, h: number): Renderer {
     ctx.globalAlpha = 1;
 
     // horizon glow line
-    ctx.strokeStyle = `rgba(${CYAN},0.1)`;
+    ctx.strokeStyle = `rgba(${pal.a},0.1)`;
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(0, horizon);
@@ -247,7 +257,9 @@ function createGrid(w: number, h: number): Renderer {
     for (let i = 0; i <= V; i++) {
       const xB = (i / V) * (w * 1.9) - w * 0.45;
       const xT = vpX + (xB - vpX) * 0.04;
-      ctx.strokeStyle = `rgba(${CYAN},0.045)`;
+      const xs = xT + (xB - xT) * 0.7;
+      const g = glowAt(xs, horizon + (h - horizon) * 0.7);
+      ctx.strokeStyle = `rgba(${pal.a},${0.045 * (1 + g * 2.4)})`;
       ctx.beginPath();
       ctx.moveTo(xT, horizon);
       ctx.lineTo(xB, h);
@@ -258,21 +270,38 @@ function createGrid(w: number, h: number): Renderer {
     for (let i = 0; i < ROWS; i++) {
       const z = (i / ROWS + phase) % 1;
       const y = horizon + Math.pow(z, 2.4) * (h - horizon);
-      const col = i % 5 === 0 ? MAGENTA : CYAN;
-      ctx.strokeStyle = `rgba(${col},${0.02 + z * 0.085})`;
+      const col = i % 5 === 0 ? pal.b : pal.a;
+      const g = glowAt(hot.x, y);
+      ctx.strokeStyle = `rgba(${col},${(0.02 + z * 0.085) * (1 + g * 2)})`;
       ctx.beginPath();
       ctx.moveTo(0, y);
       ctx.lineTo(w, y);
       ctx.stroke();
     }
+
+    // soft floor-glow pooled under the hovered card
+    if (hot.level > 0.02) {
+      const r = 210;
+      const grad = ctx.createRadialGradient(hot.x, hot.y, 0, hot.x, hot.y, r);
+      grad.addColorStop(0, `rgba(${pal.a},${0.075 * hot.level})`);
+      grad.addColorStop(1, `rgba(${pal.a},0)`);
+      ctx.fillStyle = grad;
+      ctx.fillRect(hot.x - r, hot.y - r, r * 2, r * 2);
+    }
   };
 
   return {
-    draw(ctx, t) {
+    draw(ctx, t, dt) {
+      hot.level += (hot.target - hot.level) * Math.min(1, dt * 6);
       paint(ctx, (t * 0.045) % 1); // ~22s per grid cycle
     },
     drawStatic(ctx) {
       paint(ctx, 0.4);
+    },
+    pointer(x, y, active) {
+      hot.x = x;
+      hot.y = y;
+      hot.target = active ? 1 : 0;
     },
   };
 }
@@ -280,7 +309,7 @@ function createGrid(w: number, h: number): Renderer {
 /* ------------------------------------------------------------------ */
 /* loadout — sparse code glyphs drifting upward, programs compiling    */
 /* ------------------------------------------------------------------ */
-function createGlyphs(w: number, h: number, mono: string): Renderer {
+function createGlyphs(w: number, h: number, mono: string, pal: Palette): Renderer {
   const CHARS = "01<>/[]{}=+*#:;ｱｲｳｶｷｸｹｼﾂﾃﾅﾗﾝ".split("");
   type Glyph = {
     x: number;
@@ -299,7 +328,7 @@ function createGlyphs(w: number, h: number, mono: string): Renderer {
     size: rand(9, 13),
     a: Math.random() < 0.12 ? rand(0.16, 0.26) : rand(0.04, 0.12),
     ch: pick(CHARS),
-    col: Math.random() < 0.16 ? CYAN : HAZE,
+    col: Math.random() < 0.16 ? pal.a : HAZE,
     swap: rand(1, 3),
   });
   const glyphs = Array.from(
@@ -338,7 +367,7 @@ function createGlyphs(w: number, h: number, mono: string): Renderer {
 /* ------------------------------------------------------------------ */
 /* log — EKG / network-activity trace running behind the timeline      */
 /* ------------------------------------------------------------------ */
-function createWave(w: number, h: number): Renderer {
+function createWave(w: number, h: number, pal: Palette): Renderer {
   const baseY = h * 0.44;
   const P = 300; // spike period in px
 
@@ -367,8 +396,8 @@ function createWave(w: number, h: number): Renderer {
 
   const paint = (ctx: Ctx2D, t: number) => {
     const phase = t * 42;
-    stroke(ctx, phase, baseY, CYAN, 0.11);
-    stroke(ctx, phase + 60, baseY + 18, MAGENTA, 0.05);
+    stroke(ctx, phase, baseY, pal.a, 0.11);
+    stroke(ctx, phase + 60, baseY + 18, pal.b, 0.05);
 
     // traveling pulse dot on the main trace
     const xd = ((t * 95) % (w + 60)) - 30;
@@ -378,7 +407,7 @@ function createWave(w: number, h: number): Renderer {
       [3, 0.16],
       [1.5, 0.45],
     ] as const) {
-      ctx.fillStyle = `rgba(${CYAN},${a})`;
+      ctx.fillStyle = `rgba(${pal.a},${a})`;
       ctx.beginPath();
       ctx.arc(xd, yd, r, 0, Math.PI * 2);
       ctx.fill();
@@ -390,8 +419,8 @@ function createWave(w: number, h: number): Renderer {
       paint(ctx, t);
     },
     drawStatic(ctx) {
-      stroke(ctx, 40, baseY, CYAN, 0.11);
-      stroke(ctx, 100, baseY + 18, MAGENTA, 0.05);
+      stroke(ctx, 40, baseY, pal.a, 0.11);
+      stroke(ctx, 100, baseY + 18, pal.b, 0.05);
     },
   };
 }
@@ -399,7 +428,7 @@ function createWave(w: number, h: number): Renderer {
 /* ------------------------------------------------------------------ */
 /* comm — broadcast pulse rings + rare static interference bursts      */
 /* ------------------------------------------------------------------ */
-function createPulse(w: number, h: number): Renderer {
+function createPulse(w: number, h: number, pal: Palette): Renderer {
   const cx = w * 0.5;
   const cy = h * 0.52;
   const R = Math.min(w, h) * 0.62;
@@ -420,10 +449,10 @@ function createPulse(w: number, h: number): Renderer {
   const paint = (ctx: Ctx2D, t: number) => {
     for (let k = 0; k < RINGS; k++) {
       const prog = ((t / PERIOD + k / RINGS) % 1 + 1) % 1;
-      ring(ctx, prog, k === RINGS - 1 ? MAGENTA : CYAN);
+      ring(ctx, prog, k === RINGS - 1 ? pal.b : pal.a);
     }
     // beacon dot
-    ctx.fillStyle = `rgba(${CYAN},${0.22 + 0.12 * Math.sin(t * 2.4)})`;
+    ctx.fillStyle = `rgba(${pal.a},${0.22 + 0.12 * Math.sin(t * 2.4)})`;
     ctx.beginPath();
     ctx.arc(cx, cy, 2.2, 0, Math.PI * 2);
     ctx.fill();
@@ -445,10 +474,10 @@ function createPulse(w: number, h: number): Renderer {
       }
     },
     drawStatic(ctx) {
-      ring(ctx, 0.3, CYAN);
-      ring(ctx, 0.65, CYAN);
-      ring(ctx, 0.85, MAGENTA);
-      ctx.fillStyle = `rgba(${CYAN},0.3)`;
+      ring(ctx, 0.3, pal.a);
+      ring(ctx, 0.65, pal.a);
+      ring(ctx, 0.85, pal.b);
+      ctx.fillStyle = `rgba(${pal.a},0.3)`;
       ctx.beginPath();
       ctx.arc(cx, cy, 2.2, 0, Math.PI * 2);
       ctx.fill();
@@ -459,8 +488,9 @@ function createPulse(w: number, h: number): Renderer {
 /* ------------------------------------------------------------------ */
 /* outro — the network powers down: particles decelerate, fade, then   */
 /* a single CRT collapse line — and the loop stops for good.           */
+/* (palette is already monochrome, so everything reads desaturated)    */
 /* ------------------------------------------------------------------ */
-function createPowerDown(w: number, h: number): Renderer {
+function createPowerDown(w: number, h: number, pal: Palette): Renderer {
   type Mote = { x: number; y: number; vy: number; len: number; a: number; col: string };
   const gen = () =>
     Array.from({ length: 36 }, (): Mote => ({
@@ -469,7 +499,7 @@ function createPowerDown(w: number, h: number): Renderer {
       vy: rand(40, 120),
       len: rand(10, 40),
       a: rand(0.05, 0.16),
-      col: Math.random() < 0.18 ? (Math.random() < 0.5 ? CYAN : MAGENTA) : HAZE,
+      col: Math.random() < 0.18 ? (Math.random() < 0.5 ? pal.a : pal.b) : HAZE,
     }));
 
   let motes = gen();
@@ -500,9 +530,9 @@ function createPowerDown(w: number, h: number): Renderer {
         const a = Math.max(0, 0.4 - flash * 0.9);
         if (a > 0) {
           const g = ctx.createLinearGradient(0, 0, w, 0);
-          g.addColorStop(0, `rgba(${CYAN},0)`);
-          g.addColorStop(0.5, `rgba(${CYAN},${a})`);
-          g.addColorStop(1, `rgba(${CYAN},0)`);
+          g.addColorStop(0, `rgba(${pal.a},0)`);
+          g.addColorStop(0.5, `rgba(${pal.a},${a})`);
+          g.addColorStop(1, `rgba(${pal.a},0)`);
           ctx.fillStyle = g;
           ctx.fillRect(0, h * 0.5 - 1, w, 2);
         } else {
@@ -520,28 +550,34 @@ function createPowerDown(w: number, h: number): Renderer {
 
 /* ------------------------------------------------------------------ */
 
-function createRenderer(variant: BackgroundVariant, w: number, h: number, mono: string): Renderer {
+function createRenderer(
+  variant: BackgroundVariant,
+  w: number,
+  h: number,
+  mono: string,
+  pal: Palette
+): Renderer {
   switch (variant) {
     case "hero":
-      return createRain(w, h);
+      return createRain(w, h, pal);
     case "profile":
-      return createCircuit(w, h);
+      return createCircuit(w, h, pal);
     case "runs":
-      return createGrid(w, h);
+      return createGrid(w, h, pal);
     case "loadout":
-      return createGlyphs(w, h, mono);
+      return createGlyphs(w, h, mono, pal);
     case "log":
-      return createWave(w, h);
+      return createWave(w, h, pal);
     case "comm":
-      return createPulse(w, h);
+      return createPulse(w, h, pal);
     case "outro":
-      return createPowerDown(w, h);
+      return createPowerDown(w, h, pal);
   }
 }
 
 /**
- * Ambient animated backdrop for a sector — one shared engine, themed per
- * variant. Sticky viewport-sized canvas (tall sections stay cheap), runs
+ * Ambient animated backdrop for a zone — one shared engine, themed per
+ * district. Sticky viewport-sized canvas (tall sections stay cheap), runs
  * only while within 200px of the viewport, pauses on hidden tabs, and
  * renders a single static frame under prefers-reduced-motion.
  */
@@ -566,6 +602,8 @@ const SectionBackground = ({
     const mono =
       getComputedStyle(document.body).getPropertyValue("--font-mono").trim() ||
       '"IBM Plex Mono", monospace';
+    const zone = ZONES[variant];
+    const pal: Palette = { a: zone.primaryRgb, b: zone.secondaryRgb };
 
     let w = 0;
     let h = 0;
@@ -586,7 +624,7 @@ const SectionBackground = ({
       canvas.style.width = `${w}px`;
       canvas.style.height = `${h}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      renderer = createRenderer(variant, w, h, mono);
+      renderer = createRenderer(variant, w, h, mono, pal);
       renderer.reset?.(t);
       if (reduced) {
         ctx.clearRect(0, 0, w, h);
@@ -637,6 +675,19 @@ const SectionBackground = ({
     const onVisibility = () => (document.hidden ? stop() : start());
     document.addEventListener("visibilitychange", onVisibility);
 
+    // card-hover glow: the host section feeds pointer position to the
+    // renderer while a .mission-card is under the cursor (runs only)
+    const host = variant === "runs" && !reduced ? wrap.parentElement : null;
+    const onMove = (e: PointerEvent) => {
+      if (!renderer?.pointer) return;
+      const r = canvas.getBoundingClientRect();
+      const hot = !!(e.target as Element | null)?.closest?.(".mission-card");
+      renderer.pointer(e.clientX - r.left, e.clientY - r.top, hot);
+    };
+    const onLeave = () => renderer?.pointer?.(0, 0, false);
+    host?.addEventListener("pointermove", onMove);
+    host?.addEventListener("pointerleave", onLeave);
+
     resize();
 
     return () => {
@@ -644,6 +695,8 @@ const SectionBackground = ({
       io.disconnect();
       ro.disconnect();
       document.removeEventListener("visibilitychange", onVisibility);
+      host?.removeEventListener("pointermove", onMove);
+      host?.removeEventListener("pointerleave", onLeave);
     };
   }, [variant]);
 

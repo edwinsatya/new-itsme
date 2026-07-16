@@ -53,8 +53,7 @@ const CommLink = () => {
       jp="通信"
       status="[CHANNEL OPEN]"
       statusVariant="magenta"
-      bg="comm"
-      alt
+      zone="comm"
       zIndex={35}
     >
       <div className="flex flex-wrap items-end justify-between gap-8">
@@ -63,7 +62,7 @@ const CommLink = () => {
           <GlitchText as="span" className="glitch--block md:ml-[6vw]" text="COMM CHANNEL." delay={0.14} />
         </h2>
         <p data-reveal className="hud-label hud-label--bare">
-          <span className="live-dot mr-1 text-[var(--magenta)]" />
+          <span className="live-dot mr-1 text-[var(--accent-secondary)]" />
           Accepting new jobs &amp; runs
         </p>
       </div>
@@ -73,7 +72,7 @@ const CommLink = () => {
         <form onSubmit={handleSubmit} data-reveal className="space-y-8">
           <div>
             <label htmlFor="name" className="hud-label hud-label--bare mb-2 !flex">
-              <span className="mr-2 text-[var(--magenta)]">&gt;</span> 01_Handle
+              <span className="mr-2 text-[var(--accent-secondary)]">&gt;</span> 01_Handle
             </label>
             <input
               type="text"
@@ -90,7 +89,7 @@ const CommLink = () => {
 
           <div>
             <label htmlFor="email" className="hud-label hud-label--bare mb-2 !flex">
-              <span className="mr-2 text-[var(--magenta)]">&gt;</span> 02_Return signal
+              <span className="mr-2 text-[var(--accent-secondary)]">&gt;</span> 02_Return signal
             </label>
             <input
               type="email"
@@ -107,7 +106,7 @@ const CommLink = () => {
 
           <div>
             <label htmlFor="message" className="hud-label hud-label--bare mb-2 !flex">
-              <span className="mr-2 text-[var(--magenta)]">&gt;</span> 03_Transmission
+              <span className="mr-2 text-[var(--accent-secondary)]">&gt;</span> 03_Transmission
             </label>
             <textarea
               id="message"
@@ -123,12 +122,12 @@ const CommLink = () => {
           </div>
 
           {status === "success" && (
-            <p className="border border-[rgba(0,229,255,0.4)] bg-[rgba(0,229,255,0.05)] px-5 py-4 font-mono text-xs uppercase tracking-[0.14em] text-[var(--cyan)]">
+            <p className="border border-[rgba(var(--accent-primary-rgb),0.4)] bg-[rgba(var(--accent-primary-rgb),0.05)] px-5 py-4 font-mono text-xs uppercase tracking-[0.14em] text-[var(--accent-primary)]">
               [SIGNAL RECEIVED] — transmission logged. Expect a reply within 24 hours.
             </p>
           )}
           {status === "error" && (
-            <p className="border border-[rgba(255,46,136,0.5)] bg-[rgba(255,46,136,0.05)] px-5 py-4 font-mono text-xs uppercase tracking-[0.14em] text-[var(--magenta)]">
+            <p className="border border-[rgba(var(--accent-secondary-rgb),0.5)] bg-[rgba(var(--accent-secondary-rgb),0.05)] px-5 py-4 font-mono text-xs uppercase tracking-[0.14em] text-[var(--accent-secondary)]">
               [SIGNAL LOST] — {errorMessage}
             </p>
           )}
@@ -172,7 +171,7 @@ const CommLink = () => {
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="tag !px-4 !py-2 !text-[0.62rem] transition-shadow duration-300 hover:shadow-[0_0_18px_rgba(0,229,255,0.25)]"
+                    className="tag !px-4 !py-2 !text-[0.62rem] transition-shadow duration-300 hover:shadow-[0_0_18px_rgba(var(--accent-primary-rgb),0.25)]"
                   >
                     {social.label} ↗
                   </a>
