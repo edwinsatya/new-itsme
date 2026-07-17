@@ -22,6 +22,7 @@ const Outro = () => {
   return (
     <SectionScene zone="outro" id="outro" as="footer" ref={scope} zIndex={35} flat overlap>
       <div className="arcade-scan" aria-hidden />
+      <div className="arcade-vignette" aria-hidden />
 
       <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center py-16 text-center md:py-24">
         <p data-reveal className="hud-label hud-label--bare mb-8">
@@ -42,15 +43,17 @@ const Outro = () => {
 
         <div data-reveal className="mt-6 flex items-center gap-3">
           <span
-            className="coin-pulse inline-block h-5 w-5 rounded-full border-2 border-[var(--accent-secondary)]"
-            style={{ boxShadow: "inset 0 0 0 2px #070907, inset 0 0 0 4px var(--accent-secondary)" }}
+            className="coin-pulse inline-block h-5 w-5 rounded-full border-2 border-[#ffd23f]"
+            style={{ boxShadow: "inset 0 0 0 2px #0a0616, inset 0 0 0 4px #ffd23f" }}
             aria-hidden
           />
-          <span className="press-start arcade-text text-sm">INSERT COIN TO CONTINUE</span>
+          <span className="press-start arcade-text text-sm">
+            INSERT COIN TO CONTINUE<span className="caret" />
+          </span>
         </div>
 
-        {/* high scores */}
-        <div data-reveal className="mt-12 w-full max-w-sm border border-[rgba(var(--accent-primary-rgb),0.25)] bg-[rgba(0,0,0,0.4)] p-5 font-mono text-[0.66rem] uppercase tracking-[0.18em]">
+        {/* high scores — marquee lights chasing the border */}
+        <div data-reveal className="marquee-border mt-12 w-full max-w-sm bg-[rgba(0,0,0,0.45)] p-5 font-mono text-[0.66rem] uppercase tracking-[0.18em]">
           <p className="mb-3 text-[var(--accent-secondary)]">— High Scores —</p>
           <div className="space-y-1.5 text-[var(--muted)]">
             <p className="flex justify-between">

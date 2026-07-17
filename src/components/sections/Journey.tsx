@@ -12,17 +12,20 @@ import { resumeLink } from "@/constants/links";
 const ARC_SPAN = 75;
 
 /**
- * GAME_05 — CAREER DRIVE GT. A racing career mode: skill readouts as
- * speedometer gauges that tick up on entry, the 5 roles as completed
- * checkpoints down a center racing line, certifications in the trophy
- * case, and the CV as downloadable career stats.
+ * GAME_05 — CAREER DRIVE GT. Bright-white racing UI: speedometer gauges
+ * that needle up on entry, the 5 roles as checkpoints down a scrolling
+ * road — with a kart that actually drives the track as you scroll —
+ * trophies in the case, and the CV as downloadable career stats.
  */
 const Journey = () => {
   const scopeRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const kartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const reduced = prefersReducedMotion();
     const ctx = gsap.context(() => {
+      /* speedo gauges tick up */
       gsap.utils.toArray<HTMLElement>(".gauge[data-level]").forEach((el) => {
         const level = parseFloat(el.dataset.level ?? "0");
         const arc = el.querySelector<SVGCircleElement>(".gauge-arc");
@@ -44,6 +47,35 @@ const Journey = () => {
           scrollTrigger: { trigger: el, start: "top 88%" },
         });
       });
+
+      /* the kart drives Season 1 → Season 5 with real scroll progress */
+      const track = trackRef.current;
+      const kart = kartRef.current;
+      if (track && kart && !reduced) {
+        gsap.fromTo(
+          kart,
+          { y: 0 },
+          {
+            y: () => track.offsetHeight - 80,
+            ease: "none",
+            scrollTrigger: {
+              trigger: track,
+              start: "top 72%",
+              end: "bottom 45%",
+              scrub: 0.5,
+              invalidateOnRefresh: true,
+            },
+          }
+        );
+        // gentle steering wobble while driving
+        gsap.to(kart.querySelector("svg"), {
+          rotation: 3,
+          duration: 0.9,
+          yoyo: true,
+          repeat: -1,
+          ease: "sine.inOut",
+        });
+      }
     }, scopeRef);
     return () => ctx.revert();
   }, []);
@@ -66,10 +98,13 @@ const Journey = () => {
             </span>
           </h2>
           <div data-reveal className="flex items-center gap-3">
-            <span className="checker h-4 w-14 opacity-40" aria-hidden />
+            <span className="checker h-4 w-14 opacity-70" aria-hidden />
             <p className="hud-label hud-label--bare">5 SEASONS — ALL PODIUMS</p>
           </div>
         </div>
+
+        {/* checkered flag strip */}
+        <div data-reveal className="checker-strip mt-8" aria-hidden />
 
         {/* ---- speedometer gauges ---- */}
         <div className="mt-14 grid grid-cols-2 gap-6 md:grid-cols-4">
@@ -88,10 +123,10 @@ const Journey = () => {
                     cy="50"
                     r="42"
                     pathLength={100}
-                    stroke="rgba(238,242,247,0.08)"
                     strokeWidth="6"
                     strokeDasharray={`${ARC_SPAN} 100`}
                     strokeLinecap="round"
+                    style={{ stroke: "rgba(var(--ink-rgb), 0.14)" }}
                   />
                   <circle
                     className="gauge-arc"
@@ -99,11 +134,13 @@ const Journey = () => {
                     cy="50"
                     r="42"
                     pathLength={100}
-                    stroke="var(--accent-primary)"
                     strokeWidth="6"
                     strokeDasharray="0 100"
                     strokeLinecap="round"
-                    style={{ filter: "drop-shadow(0 0 6px rgba(var(--accent-primary-rgb),0.6))" }}
+                    style={{
+                      stroke: "var(--accent-primary)",
+                      filter: "drop-shadow(0 0 6px rgba(var(--accent-primary-rgb),0.45))",
+                    }}
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -124,30 +161,39 @@ const Journey = () => {
         </div>
 
         {/* ---- the career track ---- */}
-        <div className="relative mt-20">
-          {/* center racing line */}
-          <div
-            className="absolute bottom-0 left-4 top-0 w-px md:left-1/2"
-            style={{
-              background:
-                "repeating-linear-gradient(180deg, rgba(var(--accent-primary-rgb),0.5) 0 14px, transparent 14px 26px)",
-            }}
-            aria-hidden
-          />
+        <div ref={trackRef} className="relative mt-20">
+          {/* scrolling road */}
+          <div className="road-strip" aria-hidden />
+          {/* the kart — scroll drives it from Season 1 to Season 5 */}
+          <div ref={kartRef} className="kart" aria-hidden>
+            <svg width="30" height="46" viewBox="0 0 30 46" fill="none">
+              <rect x="7" y="6" width="16" height="32" rx="6" fill="var(--accent-primary)" />
+              <rect x="10" y="14" width="10" height="9" rx="2" fill="#16181d" />
+              <rect x="2" y="8" width="5" height="10" rx="2" fill="#16181d" />
+              <rect x="23" y="8" width="5" height="10" rx="2" fill="#16181d" />
+              <rect x="2" y="28" width="5" height="10" rx="2" fill="#16181d" />
+              <rect x="23" y="28" width="5" height="10" rx="2" fill="#16181d" />
+              <rect x="9" y="2" width="12" height="4" rx="2" fill="#16181d" />
+            </svg>
+          </div>
+
           <div className="space-y-10">
             {experiences.map((exp, i) => {
               const left = i % 2 === 0;
               return (
                 <div
                   key={exp.company}
-                  className={`relative flex md:w-1/2 ${left ? "md:pr-10" : "md:ml-auto md:pl-10"} pl-12 md:pl-0 ${left ? "" : "md:pr-0"}`}
+                  className={`relative flex md:w-1/2 ${left ? "md:pr-14" : "md:ml-auto md:pl-14"} pl-20 md:pl-0 ${left ? "" : "md:pr-0"}`}
                 >
                   {/* checkpoint marker */}
                   <span
-                    className={`absolute top-6 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full border border-[rgba(var(--accent-primary-rgb),0.6)] bg-[#0c0a0d] font-mono text-[0.58rem] text-[var(--accent-primary)] ${
-                      left ? "left-4 md:left-full" : "left-4 md:left-0"
+                    className={`absolute top-6 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full border-2 border-[var(--accent-primary)] font-mono text-[0.58rem] font-semibold text-[var(--accent-primary)] ${
+                      left ? "left-[3.6rem] md:left-full" : "left-[3.6rem] md:left-0"
                     }`}
-                    style={{ boxShadow: "0 0 14px rgba(var(--accent-primary-rgb),0.35)" }}
+                    style={{
+                      background: "rgb(var(--surface-hi))",
+                      boxShadow: "0 4px 12px rgba(20,22,27,0.25)",
+                    }}
                     aria-hidden
                   >
                     {experiences.length - i}
@@ -164,7 +210,7 @@ const Journey = () => {
                       </span>
                     </div>
                     <h3 className="font-display mt-3 text-2xl text-[var(--ink)]">{exp.company}</h3>
-                    <p className="mt-1 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-[var(--accent-secondary)]">
+                    <p className="mt-1 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-[var(--accent-primary)]">
                       {exp.position}
                     </p>
                     <p className="mt-3 text-[0.9rem] leading-relaxed text-[var(--muted)]">
@@ -185,14 +231,14 @@ const Journey = () => {
               {certifications.map((cert, i) => (
                 <div
                   key={cert}
-                  className="flex items-center gap-4 border border-[var(--line-soft)] bg-[rgba(238,242,247,0.02)] p-4"
+                  className="flex items-center gap-4 border border-[var(--line-soft)] bg-[rgba(var(--ink-rgb),0.03)] p-4"
                 >
                   <span
                     className="flex h-11 w-11 flex-none items-center justify-center rounded-full border"
                     style={{
-                      color: i === 0 ? "#e2b155" : "#c7cfd9",
-                      borderColor: i === 0 ? "rgba(226,177,85,0.5)" : "rgba(199,207,217,0.4)",
-                      background: i === 0 ? "rgba(226,177,85,0.08)" : "rgba(199,207,217,0.06)",
+                      color: i === 0 ? "#b07f1e" : "#6e7a87",
+                      borderColor: i === 0 ? "rgba(176,127,30,0.5)" : "rgba(110,122,135,0.45)",
+                      background: i === 0 ? "rgba(240,180,60,0.14)" : "rgba(110,122,135,0.1)",
                     }}
                   >
                     {i === 0 ? <Trophy className="h-5 w-5" strokeWidth={1.5} /> : <Medal className="h-5 w-5" strokeWidth={1.5} />}

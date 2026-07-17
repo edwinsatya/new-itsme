@@ -48,6 +48,7 @@ const Loadout = () => (
             className="ops-slot flex flex-col p-7"
             data-cursor-label="EQUIP"
           >
+            <span className="ops-lock tgt" aria-hidden />
             <span className="ops-equip">Equipped</span>
 
             <div className="flex items-center justify-between">

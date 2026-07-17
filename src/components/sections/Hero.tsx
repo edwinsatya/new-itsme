@@ -65,9 +65,16 @@ const Hero = () => {
               <span className="accent-1">FIGHTER</span>
             </span>
           </h1>
-          <p data-reveal className="hud-label hud-label--bare">
-            ROUND 1 <span className="mx-2 opacity-40">{"//"}</span> RANKED MATCH
-          </p>
+          <div data-reveal className="flex items-center gap-4">
+            <p className="hud-label hud-label--bare">
+              ROUND 1 <span className="mx-2 opacity-40">{"//"}</span> RANKED MATCH
+            </p>
+            {/* round-timer ring — select screens always have a clock */}
+            <div className="ring-timer" aria-hidden>
+              <i className="ring-timer-arc" />
+              <span className="ring-timer-label">∞</span>
+            </div>
+          </div>
         </div>
 
         <div className="mt-12 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12">
@@ -125,7 +132,7 @@ const Hero = () => {
 
           {/* ---- portrait + roster ---- */}
           <div className="lg:col-span-5">
-            <div data-reveal className="cs-portrait aspect-[4/5] w-full">
+            <div data-reveal data-tilt="3" className="cs-portrait aspect-[4/5] w-full">
               {/* oversized monogram as the "portrait" */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="font-display select-none text-[11rem] leading-none text-transparent [-webkit-text-stroke:2px_rgba(var(--accent-primary-rgb),0.55)] md:text-[13rem]">
