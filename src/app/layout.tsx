@@ -31,7 +31,12 @@ export const metadata: Metadata = {
   authors: [{ name: "Edwin" }],
 };
 
+/* NOTE: exporting `viewport` replaces Next's defaults — width/scale must be
+   declared explicitly or phones lay the page out at 980px and let the user
+   pan sideways into empty space. */
 export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
   themeColor: "#07080c",
 };
 

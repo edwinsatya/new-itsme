@@ -59,6 +59,10 @@ html {
   background: var(--bg);
   color-scheme: dark;
   scroll-padding-top: 64px;
+  /* `clip` (with hidden fallback) on BOTH html and body — body-only
+     overflow-x does not stop sideways touch-panning on iOS */
+  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* Lenis smooth-scroll housekeeping */
@@ -79,6 +83,7 @@ body {
   font-family: var(--font-display), sans-serif;
   font-weight: 500;
   overflow-x: hidden;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -508,6 +513,10 @@ body {
 .sector {
   position: relative;
   padding: clamp(6.5rem, 13vh, 10rem) 1.5rem;
+  /* decorative layers (boot band, parked EQUIPPED banners, hills…) must
+     never widen the page on phones. `clip` — not `hidden` — so no scroll
+     container is created and the sticky scene canvases keep working. */
+  overflow-x: clip;
 }
 @media (min-width: 768px) {
   .sector {
@@ -584,6 +593,7 @@ body {
   pointer-events: none;
   opacity: 0;
   visibility: hidden; /* GSAP autoAlpha drives this */
+  overflow: hidden; /* the parked blade must never widen anything */
 }
 .load-veil {
   position: absolute;
@@ -1814,6 +1824,8 @@ body {
 }
 .hud-chip--right {
   right: 0.9rem;
+  max-width: calc(100vw - 1.8rem);
+  overflow: hidden;
 }
 /* small screens: only the NOW PLAYING chip — the legend needs a keyboard
    anyway (.hud-chip's display:flex beats Tailwind's `hidden` in the
@@ -1872,7 +1884,8 @@ body {
 .cart-banner {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  flex-wrap: wrap; /* long titles fold instead of widening the page */
+  gap: 0.45rem 0.65rem;
   width: fit-content;
   max-width: 100%;
   padding: 0.5rem 1.1rem 0.5rem 0.85rem;
@@ -1880,6 +1893,15 @@ body {
   background: linear-gradient(100deg, var(--accent-primary), var(--accent-secondary));
   clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
   box-shadow: 0 10px 28px -12px rgba(var(--accent-primary-rgb), 0.55);
+}
+@media (max-width: 480px) {
+  .cart-banner {
+    padding: 0.45rem 0.85rem 0.45rem 0.7rem;
+  }
+  .cart-banner-title {
+    font-size: 0.82rem;
+    white-space: normal;
+  }
 }
 .cart-banner-glyph {
   display: flex;

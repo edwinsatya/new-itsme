@@ -53,6 +53,10 @@ const LoadDirector = () => {
     let pendingTo = 0;
     let pendingTimer = 0;
 
+    // park the blade offscreen-left so its resting geometry can never
+    // factor into any mobile viewport-width calculation
+    gsap.set(blade, { xPercent: -145 });
+
     const measure = () => {
       const els = Array.from(document.querySelectorAll<HTMLElement>("[data-zone]"));
       zonesInDoc = els.map((el) => el.dataset.zone as ZoneId);
@@ -95,6 +99,7 @@ const LoadDirector = () => {
       tl = gsap.timeline({
         onComplete: () => {
           gsap.set(overlay, { autoAlpha: 0 });
+          gsap.set(blade, { xPercent: -145 }); // back to the parking spot
           tl = null;
         },
       });
