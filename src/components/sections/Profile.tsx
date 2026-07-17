@@ -3,150 +3,204 @@
 import { useEffect, useRef } from "react";
 import { gsap, prefersReducedMotion } from "@/lib/gsap";
 import Sector from "@/components/Sector";
-import GlitchText from "@/components/fx/GlitchText";
 import { runner } from "@/constants/profile";
 import { skills } from "@/constants/skills";
-import { projects } from "@/constants/projects";
 
+type Rarity = "legendary" | "epic" | "rare" | "common";
+
+/** equipped gear — rarity tiers drive the slot border colors */
+const RARITY: Record<string, Rarity> = {
+  React: "legendary",
+  "Next.js": "legendary",
+  TypeScript: "legendary",
+  "Node.js": "epic",
+  "Vue.js": "epic",
+  "Tailwind CSS": "epic",
+  "Angular.js": "rare",
+  mongoDB: "rare",
+  postgreSQL: "rare",
+  git: "common",
+  mysql: "common",
+};
+
+const RARITY_LABEL: { tier: Rarity; color: string; label: string }[] = [
+  { tier: "legendary", color: "rgb(226,177,85)", label: "Legendary" },
+  { tier: "epic", color: "rgb(168,85,247)", label: "Epic" },
+  { tier: "rare", color: "rgb(77,141,255)", label: "Rare" },
+  { tier: "common", color: "rgb(148,155,168)", label: "Common" },
+];
+
+/** stat block — the run so far */
+const STATS = [
+  { label: "Years of experience", value: "6+", level: 82 },
+  { label: "Projects shipped", value: "10+", level: 90 },
+  { label: "Parties joined", value: "5", level: 68 },
+];
+
+/**
+ * GAME_02 — EDWIN QUEST. An RPG status menu: character bio panel with
+ * level + XP, a stat block with animated meters, and the tech arsenal
+ * as an equipment grid with rarity-tier borders.
+ */
 const Profile = () => {
-  const innerRef = useRef<HTMLDivElement>(null);
-  const years = new Date().getFullYear() - runner.est;
-
-  const stats = [
-    { value: years, suffix: "+", label: "Years in the field" },
-    { value: projects.length, suffix: "+", label: "Runs completed" },
-    { value: 5, suffix: "", label: "Crews served" },
-  ];
+  const scopeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const reduced = prefersReducedMotion();
     const ctx = gsap.context(() => {
-      // HUD stat readouts count up when scanned
-      gsap.utils.toArray<HTMLElement>(".stat-num").forEach((el) => {
-        const target = parseInt(el.dataset.value!, 10);
-        const render = (v: number) => {
-          el.textContent = String(Math.round(v)).padStart(2, "0");
-        };
+      gsap.utils.toArray<HTMLElement>(".rpg-meter-fill[data-level]").forEach((el) => {
+        const level = parseFloat(el.dataset.level ?? "0") / 100;
         if (reduced) {
-          render(target);
+          gsap.set(el, { scaleX: level });
           return;
         }
-        const obj = { v: 0 };
-        gsap.to(obj, {
-          v: target,
-          duration: 1.3,
-          ease: "power2.out",
-          scrollTrigger: { trigger: el, start: "top 90%" },
-          onUpdate: () => render(obj.v),
-        });
-      });
-
-      if (!reduced) {
         gsap.fromTo(
-          ".chip",
-          { y: 16, opacity: 0 },
+          el,
+          { scaleX: 0 },
           {
-            y: 0,
-            opacity: 1,
-            duration: 0.45,
+            scaleX: level,
+            duration: 1.2,
             ease: "power3.out",
-            stagger: 0.035,
-            scrollTrigger: { trigger: ".arsenal-grid", start: "top 88%" },
+            scrollTrigger: { trigger: el, start: "top 90%" },
           }
         );
-      }
-    }, innerRef);
-
+      });
+    }, scopeRef);
     return () => ctx.revert();
   }, []);
 
   return (
-    <Sector
-      id="profile"
-      index="01"
-      name="PROFILE // ID"
-      jp="身元"
-      status="[DOSSIER DECRYPTED]"
-      zone="profile"
-      zIndex={55}
-    >
-      <div ref={innerRef}>
-        <div className="grid gap-14 lg:grid-cols-12 lg:gap-10">
-          {/* headline + bio + stats */}
-          <div className="lg:col-span-7">
-            <h2 className="font-display text-[clamp(2.4rem,6vw,4.8rem)] text-[var(--ink)]">
-              <GlitchText as="span" className="glitch--block" text="A DEVELOPER" />
-              <GlitchText as="span" className="glitch--block md:ml-[7vw]" text="WIRED DIFFERENT." delay={0.14} />
-            </h2>
+    <Sector id="profile" zone="profile" zIndex={60} status="[SAVE FILE 01]">
+      <div ref={scopeRef}>
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <h2 className="font-display text-[clamp(2.6rem,7vw,5.6rem)] text-[var(--ink)]">
+            <span data-glitch data-text="CHARACTER" className="glitch glitch--block">
+              CHARACTER
+            </span>
+            <span
+              data-glitch
+              data-glitch-delay="0.14"
+              data-text="STATUS"
+              className="glitch glitch--block md:ml-[6vw]"
+            >
+              <span className="accent-1">STATUS</span>
+            </span>
+          </h2>
+          <p data-reveal className="hud-label hud-label--bare">
+            MENU <span className="mx-2 opacity-40">▸</span> STATUS <span className="mx-2 opacity-40">▸</span> P1
+          </p>
+        </div>
 
-            <p data-reveal className="mt-10 max-w-md leading-relaxed text-[var(--muted)]">
-              {runner.bio}
-            </p>
-
-            <div className="mt-12 flex flex-wrap gap-x-14 gap-y-8">
-              {stats.map((stat) => (
-                <div key={stat.label} data-reveal className="flex flex-col gap-2">
-                  <span className="font-display text-5xl text-[var(--ink)] md:text-6xl">
-                    <span className="stat-num" data-value={String(stat.value)}>
-                      00
-                    </span>
-                    {stat.suffix && <span className="neon-cyan">{stat.suffix}</span>}
-                  </span>
-                  <span className="hud-label">{stat.label}</span>
+        <div className="mt-14 grid grid-cols-1 gap-8 lg:grid-cols-12">
+          {/* ---- bio + stats ---- */}
+          <div className="space-y-8 lg:col-span-5">
+            <div data-reveal className="rpg-panel">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div
+                    className="slot-glyph !h-12 !w-12"
+                    style={{ "--rarity": "226, 177, 85" } as React.CSSProperties}
+                  >
+                    <span className="!text-base">E</span>
+                  </div>
+                  <div>
+                    <p className="font-display text-xl text-[var(--ink)]">{runner.name}</p>
+                    <p className="font-mono text-[0.58rem] uppercase tracking-[0.2em] text-[var(--muted)]">
+                      {runner.role}
+                    </p>
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* dossier readout */}
-          <div className="lg:col-span-5">
-            <div data-reveal className="tgt border border-[var(--line)] bg-[rgba(14,14,24,0.6)] p-7 md:p-8">
-              <div className="mb-6 flex items-center justify-between gap-4">
-                <p className="hud-label">Dossier — E.S.Y</p>
-                <span className="tag tag--m">
-                  <span className="live-dot" />
-                  Open for runs
-                </span>
+                <span className="tag">LV {new Date().getFullYear() - runner.est}</span>
               </div>
 
-              <dl className="flex flex-col gap-4 font-mono text-[0.68rem] uppercase tracking-[0.16em]">
-                {[
-                  ["Handle", "Edwin"],
-                  ["Full name", runner.name],
-                  ["Class", runner.role],
-                  ["Base", runner.location],
-                  ["Active since", String(runner.est)],
-                ].map(([key, value]) => (
-                  <div key={key} className="flex items-baseline justify-between gap-6 border-b border-[var(--line)] pb-3">
-                    <dt className="text-[var(--faint)]">{key}</dt>
-                    <dd className="text-right text-[var(--ink)]">{value}</dd>
+              <div className="mt-5">
+                <div className="mb-1.5 flex justify-between font-mono text-[0.55rem] uppercase tracking-[0.2em] text-[var(--muted)]">
+                  <span>XP — next class: Principal Dev</span>
+                  <span className="text-[var(--accent-primary)]">7400 / 9999</span>
+                </div>
+                <div className="rpg-meter">
+                  <div className="rpg-meter-fill" data-level="74" />
+                </div>
+              </div>
+
+              {/* dialog-box bio */}
+              <p className="mt-6 border-l-2 border-[rgba(var(--accent-primary-rgb),0.4)] pl-4 text-[0.95rem] leading-relaxed text-[var(--muted)]">
+                {runner.bio}
+              </p>
+
+              <div className="mt-5 flex flex-wrap gap-2">
+                <span className="tag tag--dim">ORIGIN: {runner.location}</span>
+                <span className="tag tag--dim">GUILD: FREELANCE</span>
+              </div>
+            </div>
+
+            <div data-reveal className="rpg-panel">
+              <p className="hud-label mb-5">Stat block</p>
+              <div className="space-y-4">
+                {STATS.map((s) => (
+                  <div key={s.label} className="rpg-row !block">
+                    <div className="flex items-baseline justify-between">
+                      <span className="font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[var(--muted)]">
+                        {s.label}
+                      </span>
+                      <span className="font-display text-2xl text-[var(--ink)]">{s.value}</span>
+                    </div>
+                    <div className="rpg-meter mt-2">
+                      <div className="rpg-meter-fill" data-level={s.level} />
+                    </div>
                   </div>
                 ))}
-              </dl>
-
-              <p className="mt-6 font-mono text-[0.6rem] leading-relaxed tracking-[0.08em] text-[var(--faint)]">
-                {"// pixel-perfect interfaces to scalable back-end systems."}
-                <br />
-                {"// no job too deep in the stack."}
+              </div>
+              <p className="mt-5 flex items-center gap-2 font-mono text-[0.56rem] uppercase tracking-[0.2em] text-[var(--faint)]">
+                <span className="live-dot text-[var(--accent-secondary)]" />
+                Active quest: shipping AI-powered web apps
               </p>
             </div>
           </div>
-        </div>
 
-        {/* arsenal — installed programs */}
-        <div className="mt-24">
-          <div data-reveal className="mb-8 flex flex-wrap items-center justify-between gap-3">
-            <p className="hud-label">Arsenal // installed programs</p>
-            <span className="font-mono text-[0.58rem] uppercase tracking-[0.2em] text-[var(--faint)]">
-              {String(skills.length).padStart(2, "0")} modules loaded
-            </span>
-          </div>
-          <div className="arsenal-grid flex max-w-4xl flex-wrap gap-2.5">
-            {skills.map((skill) => (
-              <span key={skill} className="chip">
-                {skill}
-              </span>
-            ))}
+          {/* ---- equipment grid ---- */}
+          <div className="lg:col-span-7">
+            <div data-reveal className="rpg-panel h-full">
+              <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+                <p className="hud-label">Equipment — tech arsenal</p>
+                <span className="tag tag--2">{skills.length}/12 SLOTS</span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+                {skills.map((skill) => {
+                  const tier = RARITY[skill] ?? "common";
+                  return (
+                    <div key={skill} className={`slot slot--${tier}`} data-cursor-label={tier.toUpperCase()}>
+                      <div className="slot-glyph">
+                        <span>{skill.slice(0, 2).toUpperCase()}</span>
+                      </div>
+                      <span className="slot-name">{skill}</span>
+                    </div>
+                  );
+                })}
+                {/* one empty slot — always learning */}
+                <div className="slot opacity-60" style={{ borderStyle: "dashed" }}>
+                  <span className="slot-name text-[var(--faint)]">
+                    EMPTY SLOT
+                    <br />
+                    (always learning)
+                  </span>
+                </div>
+              </div>
+
+              {/* rarity legend */}
+              <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 border-t border-[var(--line-soft)] pt-4">
+                {RARITY_LABEL.map((r) => (
+                  <span
+                    key={r.tier}
+                    className="flex items-center gap-2 font-mono text-[0.54rem] uppercase tracking-[0.18em] text-[var(--muted)]"
+                  >
+                    <span className="h-2 w-2 rotate-45" style={{ background: r.color }} />
+                    {r.label}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>

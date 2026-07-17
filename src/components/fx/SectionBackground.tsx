@@ -7,16 +7,15 @@ import { ZONES, type ZoneId } from "@/config/zones";
 export type BackgroundVariant = ZoneId;
 
 /**
- * One drawing language everywhere — thin lines, dots, glyphs — with the
- * district's palette injected per zone (see src/config/zones.ts).
- * `a` = primary accent, `b` = secondary; HAZE is the shared blue-white
- * city atmosphere that keeps every district feeling like the same city.
+ * One drawing language everywhere — thin lines, dots, soft glows — with
+ * each game's palette injected per zone (see src/config/zones.ts).
+ * `a` = primary accent, `b` = secondary; MIST is the shared cool-white
+ * atmosphere that keeps every game feeling like the same console.
  */
 type Palette = { a: string; b: string };
-const HAZE = "168, 198, 228";
+const MIST = "182, 200, 226";
 
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
-const pick = <T,>(arr: readonly T[]) => arr[Math.floor(Math.random() * arr.length)];
 
 type Ctx2D = CanvasRenderingContext2D;
 
@@ -25,470 +24,423 @@ interface Renderer {
   drawStatic(ctx: Ctx2D): void;
   /** called when the section re-enters the viewport */
   reset?(t: number): void;
-  /** pointer hint from the host section (runs: card-hover glow) */
-  pointer?(x: number, y: number, active: boolean): void;
   /** set true when a one-shot sequence (outro power-down) has ended */
   finished?: boolean;
 }
 
 /* ------------------------------------------------------------------ */
-/* hero — slow neon rain / data streaks with depth via speed + alpha   */
+/* home — console ambient: slow particle field + drifting light sweep  */
+/* (PS5/Switch home-screen atmosphere)                                 */
 /* ------------------------------------------------------------------ */
-function createRain(w: number, h: number, pal: Palette): Renderer {
-  type Drop = { x: number; y: number; len: number; vy: number; a: number; col: string };
-  const col = () => {
-    const r = Math.random();
-    if (r < 0.1) return pal.b;
-    if (r < 0.26) return pal.a;
-    return HAZE;
-  };
-  const spawn = (initial: boolean): Drop => ({
-    x: rand(-60, w + 60),
-    y: initial ? rand(0, h) : rand(-190, -60),
-    len: rand(30, 110),
-    vy: rand(120, 290),
-    a: rand(0.05, 0.2),
-    col: col(),
-  });
-  const drops = Array.from(
-    { length: Math.round(Math.min(Math.max(w / (w < 768 ? 26 : 20), 24), 80)) },
-    () => spawn(true)
-  );
-
-  const paint = (ctx: Ctx2D) => {
-    ctx.lineWidth = 1;
-    for (const d of drops) {
-      const vx = d.vy * 0.16;
-      ctx.strokeStyle = `rgba(${d.col},${d.a})`;
-      ctx.beginPath();
-      ctx.moveTo(d.x, d.y);
-      ctx.lineTo(d.x - vx * (d.len / d.vy), d.y - d.len);
-      ctx.stroke();
-    }
-  };
-
-  return {
-    draw(ctx, _t, dt) {
-      for (let i = 0; i < drops.length; i++) {
-        const d = drops[i];
-        d.y += d.vy * dt;
-        d.x += d.vy * 0.16 * dt;
-        if (d.y - d.len > h) drops[i] = spawn(false);
-      }
-      paint(ctx);
-    },
-    drawStatic(ctx) {
-      paint(ctx);
-    },
-  };
-}
-
-/* ------------------------------------------------------------------ */
-/* profile — circuit traces pinging outward from nodes + slow sweep    */
-/* ------------------------------------------------------------------ */
-function createCircuit(w: number, h: number, pal: Palette): Renderer {
-  type Trace = {
-    pts: { x: number; y: number }[];
-    lens: number[];
-    total: number;
-    p: number;
-    speed: number;
-    fade: number;
-    col: string;
-  };
-
-  const genTrace = (): Trace => {
-    let x = rand(w * 0.06, w * 0.94);
-    let y = rand(h * 0.08, h * 0.92);
-    const pts = [{ x, y }];
-    let dir = pick([0, 45, 90, 135, 180, 225, 270, 315]);
-    const n = 3 + Math.floor(Math.random() * 3);
-    for (let i = 0; i < n; i++) {
-      const len = rand(26, 84);
-      const r = (dir * Math.PI) / 180;
-      x += Math.cos(r) * len;
-      y += Math.sin(r) * len;
-      pts.push({ x, y });
-      dir += pick([-90, -45, 45, 90]);
-    }
-    const lens: number[] = [];
-    let total = 0;
-    for (let i = 1; i < pts.length; i++) {
-      const l = Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
-      lens.push(l);
-      total += l;
-    }
-    return {
-      pts,
-      lens,
-      total,
-      p: 0,
-      speed: rand(0.4, 0.7),
-      fade: 1,
-      col: Math.random() < 0.2 ? pal.b : pal.a,
-    };
-  };
-
-  const dots = Array.from({ length: 26 }, () => ({
+function createAmbient(w: number, h: number, pal: Palette): Renderer {
+  type Mote = { x: number; y: number; r: number; vx: number; vy: number; a: number; col: string };
+  const motes = Array.from({ length: Math.round(Math.min(Math.max(w / 30, 22), 54)) }, (): Mote => ({
     x: rand(0, w),
     y: rand(0, h),
-    a: rand(0.03, 0.07),
+    r: rand(0.8, 2.2),
+    vx: rand(-6, 6),
+    vy: rand(-10, -3),
+    a: rand(0.05, 0.2),
+    col: Math.random() < 0.25 ? pal.a : MIST,
   }));
-  let traces: Trace[] = [];
-  let nextSpawn = 0;
 
-  const strokeTrace = (ctx: Ctx2D, tr: Trace, headGlow: boolean) => {
-    const target = tr.p * tr.total;
-    ctx.strokeStyle = `rgba(${tr.col},${0.09 * tr.fade})`;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(tr.pts[0].x, tr.pts[0].y);
-    let run = 0;
-    let head = tr.pts[0];
-    for (let i = 1; i < tr.pts.length; i++) {
-      const seg = tr.lens[i - 1];
-      if (run + seg <= target) {
-        ctx.lineTo(tr.pts[i].x, tr.pts[i].y);
-        head = tr.pts[i];
-        run += seg;
-      } else {
-        const k = (target - run) / seg;
-        head = {
-          x: tr.pts[i - 1].x + (tr.pts[i].x - tr.pts[i - 1].x) * k,
-          y: tr.pts[i - 1].y + (tr.pts[i].y - tr.pts[i - 1].y) * k,
-        };
-        ctx.lineTo(head.x, head.y);
-        break;
-      }
+  const paint = (ctx: Ctx2D, t: number) => {
+    for (const m of motes) {
+      const tw = 0.7 + 0.3 * Math.sin(t * 1.4 + m.x);
+      ctx.fillStyle = `rgba(${m.col},${m.a * tw})`;
+      ctx.beginPath();
+      ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+      ctx.fill();
     }
-    ctx.stroke();
-    // origin node + bright head
-    ctx.fillStyle = `rgba(${tr.col},${0.35 * tr.fade})`;
-    ctx.fillRect(tr.pts[0].x - 1.5, tr.pts[0].y - 1.5, 3, 3);
-    if (headGlow && tr.p < 1) {
-      ctx.fillStyle = `rgba(${tr.col},${0.5 * tr.fade})`;
-      ctx.fillRect(head.x - 1, head.y - 1, 2, 2);
-    }
+    // wide horizontal light band drifting down, very soft
+    const band = 220;
+    const y = ((t * 16) % (h + band * 2)) - band;
+    const g = ctx.createLinearGradient(0, y, 0, y + band);
+    g.addColorStop(0, `rgba(${pal.a},0)`);
+    g.addColorStop(0.5, `rgba(${pal.a},0.03)`);
+    g.addColorStop(1, `rgba(${pal.a},0)`);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, y, w, band);
   };
 
   return {
     draw(ctx, t, dt) {
-      ctx.fillStyle = `rgba(${HAZE},0.05)`;
-      for (const d of dots) {
-        ctx.globalAlpha = d.a / 0.05;
-        ctx.fillRect(d.x, d.y, 1.4, 1.4);
+      for (const m of motes) {
+        m.x += m.vx * dt;
+        m.y += m.vy * dt;
+        if (m.y < -6) { m.y = h + 6; m.x = rand(0, w); }
+        if (m.x < -6) m.x = w + 6;
+        if (m.x > w + 6) m.x = -6;
       }
-      ctx.globalAlpha = 1;
-
-      if (t >= nextSpawn && traces.length < 7) {
-        traces.push(genTrace());
-        nextSpawn = t + rand(1.2, 2.4);
-      }
-      for (const tr of traces) {
-        if (tr.p < 1) tr.p = Math.min(1, tr.p + tr.speed * dt);
-        else tr.fade -= dt * 0.55;
-        strokeTrace(ctx, tr, true);
-      }
-      traces = traces.filter((tr) => tr.fade > 0);
-
-      // slow scanline sweep, top to bottom (~16s per pass)
-      const band = 110;
-      const y = ((t * 34) % (h + band * 2)) - band;
-      const g = ctx.createLinearGradient(0, y, 0, y + band);
-      g.addColorStop(0, `rgba(${pal.a},0)`);
-      g.addColorStop(0.5, `rgba(${pal.a},0.035)`);
-      g.addColorStop(1, `rgba(${pal.a},0)`);
-      ctx.fillStyle = g;
-      ctx.fillRect(0, y, w, band);
+      paint(ctx, t);
     },
     drawStatic(ctx) {
-      ctx.fillStyle = `rgba(${HAZE},0.05)`;
-      for (const d of dots) ctx.fillRect(d.x, d.y, 1.4, 1.4);
-      for (let i = 0; i < 4; i++) {
-        const tr = genTrace();
-        tr.p = 1;
-        strokeTrace(ctx, tr, false);
-      }
+      paint(ctx, 2);
     },
   };
 }
 
 /* ------------------------------------------------------------------ */
-/* runs — perspective data-floor grid; glows brighter near a hovered   */
-/* mission card (pointer() fed by the host section)                    */
+/* hero — fight arena: embers rising + hard diagonal speed slashes     */
 /* ------------------------------------------------------------------ */
-function createGrid(w: number, h: number, pal: Palette): Renderer {
-  const horizon = h * 0.36;
-  const vpX = w / 2;
-  const V = 22;
-  const ROWS = 13;
-  const stars = Array.from({ length: 30 }, () => ({
+function createArena(w: number, h: number, pal: Palette): Renderer {
+  type Ember = { x: number; y: number; vy: number; r: number; a: number; col: string };
+  const spawn = (initial: boolean): Ember => ({
     x: rand(0, w),
-    y: rand(0, horizon * 0.95),
-    a: rand(0.03, 0.08),
-  }));
-
-  // card-hover hotspot — level eases toward target in draw()
-  const hot = { x: 0, y: 0, level: 0, target: 0 };
-  const glowAt = (x: number, y: number) => {
-    if (hot.level <= 0.02) return 0;
-    const dx = x - hot.x;
-    const dy = y - hot.y;
-    return hot.level * Math.exp(-(dx * dx + dy * dy) / 52000); // σ ≈ 160px
-  };
-
-  const paint = (ctx: Ctx2D, phase: number) => {
-    ctx.fillStyle = `rgba(${HAZE},1)`;
-    for (const s of stars) {
-      ctx.globalAlpha = s.a;
-      ctx.fillRect(s.x, s.y, 1.3, 1.3);
-    }
-    ctx.globalAlpha = 1;
-
-    // horizon glow line
-    ctx.strokeStyle = `rgba(${pal.a},0.1)`;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, horizon);
-    ctx.lineTo(w, horizon);
-    ctx.stroke();
-
-    // fan of verticals converging on the vanishing point
-    for (let i = 0; i <= V; i++) {
-      const xB = (i / V) * (w * 1.9) - w * 0.45;
-      const xT = vpX + (xB - vpX) * 0.04;
-      const xs = xT + (xB - xT) * 0.7;
-      const g = glowAt(xs, horizon + (h - horizon) * 0.7);
-      ctx.strokeStyle = `rgba(${pal.a},${0.045 * (1 + g * 2.4)})`;
-      ctx.beginPath();
-      ctx.moveTo(xT, horizon);
-      ctx.lineTo(xB, h);
-      ctx.stroke();
-    }
-
-    // horizontals drifting toward the viewer
-    for (let i = 0; i < ROWS; i++) {
-      const z = (i / ROWS + phase) % 1;
-      const y = horizon + Math.pow(z, 2.4) * (h - horizon);
-      const col = i % 5 === 0 ? pal.b : pal.a;
-      const g = glowAt(hot.x, y);
-      ctx.strokeStyle = `rgba(${col},${(0.02 + z * 0.085) * (1 + g * 2)})`;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(w, y);
-      ctx.stroke();
-    }
-
-    // soft floor-glow pooled under the hovered card
-    if (hot.level > 0.02) {
-      const r = 210;
-      const grad = ctx.createRadialGradient(hot.x, hot.y, 0, hot.x, hot.y, r);
-      grad.addColorStop(0, `rgba(${pal.a},${0.075 * hot.level})`);
-      grad.addColorStop(1, `rgba(${pal.a},0)`);
-      ctx.fillStyle = grad;
-      ctx.fillRect(hot.x - r, hot.y - r, r * 2, r * 2);
-    }
-  };
-
-  return {
-    draw(ctx, t, dt) {
-      hot.level += (hot.target - hot.level) * Math.min(1, dt * 6);
-      paint(ctx, (t * 0.045) % 1); // ~22s per grid cycle
-    },
-    drawStatic(ctx) {
-      paint(ctx, 0.4);
-    },
-    pointer(x, y, active) {
-      hot.x = x;
-      hot.y = y;
-      hot.target = active ? 1 : 0;
-    },
-  };
-}
-
-/* ------------------------------------------------------------------ */
-/* loadout — sparse code glyphs drifting upward, programs compiling    */
-/* ------------------------------------------------------------------ */
-function createGlyphs(w: number, h: number, mono: string, pal: Palette): Renderer {
-  const CHARS = "01<>/[]{}=+*#:;ｱｲｳｶｷｸｹｼﾂﾃﾅﾗﾝ".split("");
-  type Glyph = {
-    x: number;
-    y: number;
-    vy: number;
-    size: number;
-    a: number;
-    ch: string;
-    col: string;
-    swap: number;
-  };
-  const spawn = (initial: boolean): Glyph => ({
-    x: rand(0, w),
-    y: initial ? rand(0, h) : h + rand(10, 60),
-    vy: rand(9, 24),
-    size: rand(9, 13),
-    a: Math.random() < 0.12 ? rand(0.16, 0.26) : rand(0.04, 0.12),
-    ch: pick(CHARS),
-    col: Math.random() < 0.16 ? pal.a : HAZE,
-    swap: rand(1, 3),
+    y: initial ? rand(0, h) : h + rand(4, 40),
+    vy: rand(14, 46),
+    r: rand(0.8, 2),
+    a: rand(0.08, 0.3),
+    col: Math.random() < 0.55 ? pal.a : pal.b,
   });
-  const glyphs = Array.from(
-    { length: Math.round(Math.min(Math.max(w / 26, 26), 58)) },
+  const embers = Array.from(
+    { length: Math.round(Math.min(Math.max(w / 34, 18), 46)) },
     () => spawn(true)
   );
 
-  const paint = (ctx: Ctx2D) => {
-    for (const g of glyphs) {
-      ctx.font = `${g.size}px ${mono}`;
-      ctx.fillStyle = `rgba(${g.col},${g.a})`;
-      ctx.fillText(g.ch, g.x, g.y);
-    }
-  };
+  type Slash = { y: number; p: number; speed: number; col: string };
+  let slashes: Slash[] = [];
+  let nextSlash = rand(1.5, 3);
 
-  return {
-    draw(ctx, _t, dt) {
-      for (let i = 0; i < glyphs.length; i++) {
-        const g = glyphs[i];
-        g.y -= g.vy * dt;
-        g.swap -= dt;
-        if (g.swap <= 0) {
-          g.ch = pick(CHARS);
-          g.swap = rand(1, 3);
-        }
-        if (g.y < -20) glyphs[i] = spawn(false);
-      }
-      paint(ctx);
-    },
-    drawStatic(ctx) {
-      paint(ctx);
-    },
-  };
-}
-
-/* ------------------------------------------------------------------ */
-/* log — EKG / network-activity trace running behind the timeline      */
-/* ------------------------------------------------------------------ */
-function createWave(w: number, h: number, pal: Palette): Renderer {
-  const baseY = h * 0.44;
-  const P = 300; // spike period in px
-
-  const spike = (p: number) => {
-    if (p < 6) return -p * 2.4;
-    if (p < 14) return -14.4 + (p - 6) * 5.4;
-    if (p < 24) return 28.8 - (p - 14) * 3.4;
-    return 0;
-  };
-  const wave = (x: number, phase: number) => {
-    const u = x + phase;
-    return Math.sin(u * 0.016) * 4 + spike(((u % P) + P) % P) * 0.85;
-  };
-
-  const stroke = (ctx: Ctx2D, phase: number, y0: number, col: string, a: number) => {
-    ctx.strokeStyle = `rgba(${col},${a})`;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (let x = 0; x <= w; x += 5) {
-      const y = y0 + wave(x, phase);
-      if (x === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    }
-    ctx.stroke();
-  };
-
-  const paint = (ctx: Ctx2D, t: number) => {
-    const phase = t * 42;
-    stroke(ctx, phase, baseY, pal.a, 0.11);
-    stroke(ctx, phase + 60, baseY + 18, pal.b, 0.05);
-
-    // traveling pulse dot on the main trace
-    const xd = ((t * 95) % (w + 60)) - 30;
-    const yd = baseY + wave(xd, phase);
-    for (const [r, a] of [
-      [5, 0.06],
-      [3, 0.16],
-      [1.5, 0.45],
-    ] as const) {
-      ctx.fillStyle = `rgba(${pal.a},${a})`;
+  const paintEmbers = (ctx: Ctx2D) => {
+    for (const e of embers) {
+      ctx.fillStyle = `rgba(${e.col},${e.a})`;
       ctx.beginPath();
-      ctx.arc(xd, yd, r, 0, Math.PI * 2);
+      ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
       ctx.fill();
     }
   };
 
   return {
-    draw(ctx, t) {
-      paint(ctx, t);
+    draw(ctx, t, dt) {
+      for (let i = 0; i < embers.length; i++) {
+        const e = embers[i];
+        e.y -= e.vy * dt;
+        e.x += Math.sin(t * 1.2 + e.y * 0.02) * 8 * dt;
+        if (e.y < -8) embers[i] = spawn(false);
+      }
+      paintEmbers(ctx);
+
+      // diagonal slash streaks tearing across (fight-intro energy)
+      if (t >= nextSlash && slashes.length < 3) {
+        slashes.push({ y: rand(h * 0.12, h * 0.85), p: 0, speed: rand(1.6, 2.4), col: Math.random() < 0.5 ? pal.a : pal.b });
+        nextSlash = t + rand(2.2, 4.5);
+      }
+      ctx.lineWidth = 1;
+      for (const s of slashes) {
+        s.p = Math.min(1, s.p + s.speed * dt);
+        const fade = s.p < 0.5 ? 1 : 1 - (s.p - 0.5) * 2;
+        const x = -w * 0.2 + s.p * w * 1.4;
+        ctx.strokeStyle = `rgba(${s.col},${0.22 * fade})`;
+        ctx.beginPath();
+        ctx.moveTo(x - 160, s.y + 46);
+        ctx.lineTo(x, s.y);
+        ctx.stroke();
+      }
+      slashes = slashes.filter((s) => s.p < 1);
     },
     drawStatic(ctx) {
-      stroke(ctx, 40, baseY, pal.a, 0.11);
-      stroke(ctx, 100, baseY + 18, pal.b, 0.05);
+      paintEmbers(ctx);
     },
   };
 }
 
 /* ------------------------------------------------------------------ */
-/* comm — broadcast pulse rings + rare static interference bursts      */
+/* profile — RPG: floating gem diamonds + 4-point star twinkles        */
 /* ------------------------------------------------------------------ */
-function createPulse(w: number, h: number, pal: Palette): Renderer {
-  const cx = w * 0.5;
-  const cy = h * 0.52;
-  const R = Math.min(w, h) * 0.62;
-  const PERIOD = 5.4;
-  const RINGS = 3;
-  let burstUntil = -1;
-  let nextBurst = rand(4, 8);
+function createRunes(w: number, h: number, pal: Palette): Renderer {
+  type Gem = { x: number; y: number; s: number; vy: number; rot: number; vr: number; a: number; col: string };
+  const spawn = (initial: boolean): Gem => ({
+    x: rand(0, w),
+    y: initial ? rand(0, h) : h + rand(10, 50),
+    s: rand(3, 7),
+    vy: rand(6, 16),
+    rot: rand(0, Math.PI),
+    vr: rand(-0.4, 0.4),
+    a: rand(0.06, 0.2),
+    col: Math.random() < 0.5 ? pal.a : pal.b,
+  });
+  const gems = Array.from({ length: Math.round(Math.min(Math.max(w / 60, 10), 24)) }, () => spawn(true));
 
-  const ring = (ctx: Ctx2D, prog: number, col: string) => {
-    if (prog <= 0 || prog >= 1) return;
-    ctx.strokeStyle = `rgba(${col},${0.13 * (1 - prog)})`;
+  type Star = { x: number; y: number; born: number; life: number; s: number; col: string };
+  let stars: Star[] = [];
+  let nextStar = 0;
+
+  const drawGem = (ctx: Ctx2D, g: Gem) => {
+    ctx.save();
+    ctx.translate(g.x, g.y);
+    ctx.rotate(g.rot);
+    ctx.strokeStyle = `rgba(${g.col},${g.a})`;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(-g.s / 2, -g.s / 2, g.s, g.s);
+    ctx.restore();
+  };
+  const drawStar = (ctx: Ctx2D, x: number, y: number, s: number, a: number, col: string) => {
+    ctx.strokeStyle = `rgba(${col},${a})`;
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.arc(cx, cy, 8 + prog * R, 0, Math.PI * 2);
+    ctx.moveTo(x - s, y);
+    ctx.lineTo(x + s, y);
+    ctx.moveTo(x, y - s);
+    ctx.lineTo(x, y + s);
     ctx.stroke();
   };
 
-  const paint = (ctx: Ctx2D, t: number) => {
-    for (let k = 0; k < RINGS; k++) {
-      const prog = ((t / PERIOD + k / RINGS) % 1 + 1) % 1;
-      ring(ctx, prog, k === RINGS - 1 ? pal.b : pal.a);
-    }
-    // beacon dot
-    ctx.fillStyle = `rgba(${pal.a},${0.22 + 0.12 * Math.sin(t * 2.4)})`;
+  return {
+    draw(ctx, t, dt) {
+      for (let i = 0; i < gems.length; i++) {
+        const g = gems[i];
+        g.y -= g.vy * dt;
+        g.rot += g.vr * dt;
+        if (g.y < -12) gems[i] = spawn(false);
+        drawGem(ctx, g);
+      }
+      if (t >= nextStar) {
+        stars.push({ x: rand(w * 0.05, w * 0.95), y: rand(h * 0.05, h * 0.9), born: t, life: rand(0.8, 1.4), s: rand(3, 7), col: Math.random() < 0.6 ? pal.a : MIST });
+        nextStar = t + rand(0.5, 1.4);
+      }
+      for (const s of stars) {
+        const p = (t - s.born) / s.life;
+        const a = Math.sin(Math.min(Math.max(p, 0), 1) * Math.PI) * 0.4;
+        drawStar(ctx, s.x, s.y, s.s * (0.5 + p * 0.5), a, s.col);
+      }
+      stars = stars.filter((s) => t - s.born < s.life);
+    },
+    drawStatic(ctx) {
+      for (const g of gems) drawGem(ctx, g);
+      drawStar(ctx, w * 0.3, h * 0.3, 5, 0.3, pal.a);
+      drawStar(ctx, w * 0.7, h * 0.6, 4, 0.25, MIST);
+    },
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* works — platformer: parallax cloud banks + drifting coin glints     */
+/* ------------------------------------------------------------------ */
+function createOverworld(w: number, h: number, pal: Palette): Renderer {
+  type Cloud = { x: number; y: number; s: number; v: number; a: number };
+  const clouds = Array.from({ length: Math.round(Math.min(Math.max(w / 160, 5), 10)) }, (): Cloud => ({
+    x: rand(-100, w + 100),
+    y: rand(h * 0.04, h * 0.75),
+    s: rand(30, 84),
+    v: rand(4, 14),
+    a: rand(0.025, 0.06),
+  }));
+  type Coin = { x: number; y: number; born: number; life: number };
+  let coins: Coin[] = [];
+  let nextCoin = 0;
+
+  const drawCloud = (ctx: Ctx2D, c: Cloud) => {
+    ctx.fillStyle = `rgba(${MIST},${c.a})`;
     ctx.beginPath();
-    ctx.arc(cx, cy, 2.2, 0, Math.PI * 2);
+    ctx.arc(c.x, c.y, c.s * 0.5, 0, Math.PI * 2);
+    ctx.arc(c.x + c.s * 0.45, c.y + c.s * 0.1, c.s * 0.36, 0, Math.PI * 2);
+    ctx.arc(c.x - c.s * 0.45, c.y + c.s * 0.12, c.s * 0.32, 0, Math.PI * 2);
     ctx.fill();
   };
 
   return {
-    draw(ctx, t) {
-      paint(ctx, t);
-      // occasional interference: a few frames of sparse static
-      if (t >= nextBurst) {
-        burstUntil = t + 0.13;
-        nextBurst = t + rand(5, 9);
+    draw(ctx, t, dt) {
+      for (const c of clouds) {
+        c.x += c.v * dt;
+        if (c.x - c.s > w + 60) c.x = -c.s - 60;
+        drawCloud(ctx, c);
       }
-      if (t < burstUntil) {
-        ctx.fillStyle = `rgba(${HAZE},0.07)`;
-        for (let i = 0; i < 110; i++) {
-          ctx.fillRect(rand(0, w), rand(0, h), rand(1, 2), rand(1, 2));
-        }
+      // coin glints: a small circle that pops with a shine tick
+      if (t >= nextCoin) {
+        coins.push({ x: rand(w * 0.06, w * 0.94), y: rand(h * 0.1, h * 0.85), born: t, life: 1.1 });
+        nextCoin = t + rand(1.2, 2.6);
       }
+      for (const c of coins) {
+        const p = (t - c.born) / c.life;
+        const a = Math.sin(p * Math.PI) * 0.5;
+        ctx.strokeStyle = `rgba(${pal.b},${a})`;
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        const squish = Math.abs(Math.cos(p * Math.PI * 2));
+        ctx.ellipse(c.x, c.y, 4.5 * Math.max(squish, 0.12), 4.5, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      coins = coins.filter((c) => t - c.born < c.life);
     },
     drawStatic(ctx) {
-      ring(ctx, 0.3, pal.a);
-      ring(ctx, 0.65, pal.a);
-      ring(ctx, 0.85, pal.b);
-      ctx.fillStyle = `rgba(${pal.a},0.3)`;
-      ctx.beginPath();
-      ctx.arc(cx, cy, 2.2, 0, Math.PI * 2);
-      ctx.fill();
+      for (const c of clouds) drawCloud(ctx, c);
     },
   };
 }
 
 /* ------------------------------------------------------------------ */
-/* outro — the network powers down: particles decelerate, fade, then   */
-/* a single CRT collapse line — and the loop stops for good.           */
-/* (palette is already monochrome, so everything reads desaturated)    */
+/* services — FPS: tactical grid + radar sweep with contact blips      */
+/* ------------------------------------------------------------------ */
+function createRadar(w: number, h: number, pal: Palette): Renderer {
+  const cx = w * 0.78;
+  const cy = h * 0.42;
+  const R = Math.min(w, h) * 0.42;
+  const CELL = 64;
+  const blips = Array.from({ length: 6 }, () => ({
+    ang: rand(0, Math.PI * 2),
+    r: rand(R * 0.2, R * 0.92),
+  }));
+
+  const paintGrid = (ctx: Ctx2D) => {
+    ctx.strokeStyle = `rgba(${MIST},0.03)`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let x = 0; x <= w; x += CELL) {
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, h);
+    }
+    for (let y = 0; y <= h; y += CELL) {
+      ctx.moveTo(0, y);
+      ctx.lineTo(w, y);
+    }
+    ctx.stroke();
+    // radar rings
+    ctx.strokeStyle = `rgba(${pal.a},0.07)`;
+    for (let i = 1; i <= 3; i++) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, (R * i) / 3, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  };
+
+  return {
+    draw(ctx, t) {
+      paintGrid(ctx);
+      const sweep = t * 0.9;
+      // sweep wedge (fading trail)
+      for (let i = 0; i < 22; i++) {
+        const a = sweep - i * 0.035;
+        ctx.strokeStyle = `rgba(${pal.a},${0.09 * (1 - i / 22)})`;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R);
+        ctx.stroke();
+      }
+      // blips light up as the sweep passes
+      for (const b of blips) {
+        const diff = ((sweep - b.ang) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+        const glow = Math.max(0, 1 - diff / 1.6);
+        if (glow > 0.02) {
+          ctx.fillStyle = `rgba(${pal.a},${0.5 * glow})`;
+          ctx.beginPath();
+          ctx.arc(cx + Math.cos(b.ang) * b.r, cy + Math.sin(b.ang) * b.r, 2.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    },
+    drawStatic(ctx) {
+      paintGrid(ctx);
+    },
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* journey — racing: horizontal speed streaks + drifting checker band  */
+/* ------------------------------------------------------------------ */
+function createSpeedway(w: number, h: number, pal: Palette): Renderer {
+  type Streak = { x: number; y: number; len: number; v: number; a: number; col: string };
+  const spawn = (initial: boolean): Streak => ({
+    x: initial ? rand(0, w) : -rand(80, 240),
+    y: rand(0, h),
+    len: rand(40, 190),
+    v: rand(260, 720),
+    a: rand(0.04, 0.16),
+    col: Math.random() < 0.3 ? pal.a : MIST,
+  });
+  const streaks = Array.from(
+    { length: Math.round(Math.min(Math.max(w / 40, 16), 38)) },
+    () => spawn(true)
+  );
+
+  const paint = (ctx: Ctx2D) => {
+    ctx.lineWidth = 1;
+    for (const s of streaks) {
+      const g = ctx.createLinearGradient(s.x - s.len, s.y, s.x, s.y);
+      g.addColorStop(0, `rgba(${s.col},0)`);
+      g.addColorStop(1, `rgba(${s.col},${s.a})`);
+      ctx.strokeStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(s.x - s.len, s.y);
+      ctx.lineTo(s.x, s.y);
+      ctx.stroke();
+    }
+  };
+
+  return {
+    draw(ctx, _t, dt) {
+      for (let i = 0; i < streaks.length; i++) {
+        const s = streaks[i];
+        s.x += s.v * dt;
+        if (s.x - s.len > w) streaks[i] = spawn(false);
+      }
+      paint(ctx);
+    },
+    drawStatic(ctx) {
+      paint(ctx);
+    },
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* contact — multiplayer: network constellation, links pulse alive     */
+/* ------------------------------------------------------------------ */
+function createNetwork(w: number, h: number, pal: Palette): Renderer {
+  type Node = { x: number; y: number; vx: number; vy: number; r: number };
+  const nodes = Array.from({ length: Math.round(Math.min(Math.max(w / 70, 12), 26)) }, (): Node => ({
+    x: rand(0, w),
+    y: rand(0, h),
+    vx: rand(-9, 9),
+    vy: rand(-7, 7),
+    r: rand(1.2, 2.4),
+  }));
+  const LINK = 150;
+
+  const paint = (ctx: Ctx2D, t: number) => {
+    ctx.lineWidth = 1;
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const a = nodes[i];
+        const b = nodes[j];
+        const d = Math.hypot(a.x - b.x, a.y - b.y);
+        if (d < LINK) {
+          const pulse = 0.6 + 0.4 * Math.sin(t * 1.6 + i + j);
+          ctx.strokeStyle = `rgba(${pal.a},${(1 - d / LINK) * 0.11 * pulse})`;
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+        }
+      }
+    }
+    for (const [i, n] of nodes.entries()) {
+      const col = i % 4 === 0 ? pal.b : pal.a;
+      ctx.fillStyle = `rgba(${col},${0.35 + 0.2 * Math.sin(t * 2 + i)})`;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  };
+
+  return {
+    draw(ctx, t, dt) {
+      for (const n of nodes) {
+        n.x += n.vx * dt;
+        n.y += n.vy * dt;
+        if (n.x < 0 || n.x > w) n.vx *= -1;
+        if (n.y < 0 || n.y > h) n.vy *= -1;
+      }
+      paint(ctx, t);
+    },
+    drawStatic(ctx) {
+      paint(ctx, 1);
+    },
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* outro — the console powers down: motes decelerate, fade, then a     */
+/* single CRT collapse line — and the loop stops for good.             */
 /* ------------------------------------------------------------------ */
 function createPowerDown(w: number, h: number, pal: Palette): Renderer {
   type Mote = { x: number; y: number; vy: number; len: number; a: number; col: string };
@@ -499,7 +451,7 @@ function createPowerDown(w: number, h: number, pal: Palette): Renderer {
       vy: rand(40, 120),
       len: rand(10, 40),
       a: rand(0.05, 0.16),
-      col: Math.random() < 0.18 ? (Math.random() < 0.5 ? pal.a : pal.b) : HAZE,
+      col: Math.random() < 0.2 ? (Math.random() < 0.5 ? pal.a : pal.b) : MIST,
     }));
 
   let motes = gen();
@@ -541,7 +493,7 @@ function createPowerDown(w: number, h: number, pal: Palette): Renderer {
       }
     },
     drawStatic(ctx) {
-      ctx.fillStyle = `rgba(${HAZE},0.06)`;
+      ctx.fillStyle = `rgba(${MIST},0.06)`;
       for (const m of motes.slice(0, 16)) ctx.fillRect(m.x, m.y, 1.4, 1.4);
     },
   };
@@ -550,34 +502,30 @@ function createPowerDown(w: number, h: number, pal: Palette): Renderer {
 
 /* ------------------------------------------------------------------ */
 
-function createRenderer(
-  variant: BackgroundVariant,
-  w: number,
-  h: number,
-  mono: string,
-  pal: Palette
-): Renderer {
+function createRenderer(variant: BackgroundVariant, w: number, h: number, pal: Palette): Renderer {
   switch (variant) {
+    case "home":
+      return createAmbient(w, h, pal);
     case "hero":
-      return createRain(w, h, pal);
+      return createArena(w, h, pal);
     case "profile":
-      return createCircuit(w, h, pal);
-    case "runs":
-      return createGrid(w, h, pal);
-    case "loadout":
-      return createGlyphs(w, h, mono, pal);
-    case "log":
-      return createWave(w, h, pal);
-    case "comm":
-      return createPulse(w, h, pal);
+      return createRunes(w, h, pal);
+    case "works":
+      return createOverworld(w, h, pal);
+    case "services":
+      return createRadar(w, h, pal);
+    case "journey":
+      return createSpeedway(w, h, pal);
+    case "contact":
+      return createNetwork(w, h, pal);
     case "outro":
       return createPowerDown(w, h, pal);
   }
 }
 
 /**
- * Ambient animated backdrop for a zone — one shared engine, themed per
- * district. Sticky viewport-sized canvas (tall sections stay cheap), runs
+ * Ambient animated backdrop for a game zone — one shared engine, themed
+ * per genre. Sticky viewport-sized canvas (tall sections stay cheap), runs
  * only while within 200px of the viewport, pauses on hidden tabs, and
  * renders a single static frame under prefers-reduced-motion.
  */
@@ -599,9 +547,6 @@ const SectionBackground = ({
     if (!ctx) return;
 
     const reduced = prefersReducedMotion();
-    const mono =
-      getComputedStyle(document.body).getPropertyValue("--font-mono").trim() ||
-      '"IBM Plex Mono", monospace';
     const zone = ZONES[variant];
     const pal: Palette = { a: zone.primaryRgb, b: zone.secondaryRgb };
 
@@ -624,7 +569,7 @@ const SectionBackground = ({
       canvas.style.width = `${w}px`;
       canvas.style.height = `${h}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      renderer = createRenderer(variant, w, h, mono, pal);
+      renderer = createRenderer(variant, w, h, pal);
       renderer.reset?.(t);
       if (reduced) {
         ctx.clearRect(0, 0, w, h);
@@ -675,19 +620,6 @@ const SectionBackground = ({
     const onVisibility = () => (document.hidden ? stop() : start());
     document.addEventListener("visibilitychange", onVisibility);
 
-    // card-hover glow: the host section feeds pointer position to the
-    // renderer while a .mission-card is under the cursor (runs only)
-    const host = variant === "runs" && !reduced ? wrap.parentElement : null;
-    const onMove = (e: PointerEvent) => {
-      if (!renderer?.pointer) return;
-      const r = canvas.getBoundingClientRect();
-      const hot = !!(e.target as Element | null)?.closest?.(".mission-card");
-      renderer.pointer(e.clientX - r.left, e.clientY - r.top, hot);
-    };
-    const onLeave = () => renderer?.pointer?.(0, 0, false);
-    host?.addEventListener("pointermove", onMove);
-    host?.addEventListener("pointerleave", onLeave);
-
     resize();
 
     return () => {
@@ -695,8 +627,6 @@ const SectionBackground = ({
       io.disconnect();
       ro.disconnect();
       document.removeEventListener("visibilitychange", onVisibility);
-      host?.removeEventListener("pointermove", onMove);
-      host?.removeEventListener("pointerleave", onLeave);
     };
   }, [variant]);
 

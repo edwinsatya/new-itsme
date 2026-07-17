@@ -1,273 +1,182 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap, EASE_OUT, PRELOADER_DONE_EVENT, prefersReducedMotion } from "@/lib/gsap";
-import SectionScene from "@/components/fx/SectionScene";
+import { gsap, prefersReducedMotion } from "@/lib/gsap";
+import Sector from "@/components/Sector";
 import { runner } from "@/constants/profile";
 
-/* deterministic skyline geometry: [x, width, height] — SSR-stable */
-const BACK_TOWERS: [number, number, number][] = [
-  [0, 70, 120], [80, 50, 180], [140, 90, 90], [240, 60, 150], [310, 80, 205],
-  [400, 55, 110], [465, 70, 165], [545, 95, 82], [650, 60, 190], [720, 80, 130],
-  [810, 65, 172], [885, 90, 100], [985, 55, 215], [1050, 75, 140], [1135, 60, 92],
-  [1205, 85, 182], [1300, 70, 122], [1380, 60, 160],
-];
-const FRONT_TOWERS: [number, number, number][] = [
-  [0, 90, 72], [100, 70, 132], [180, 110, 60], [300, 80, 104], [390, 120, 52],
-  [520, 90, 112], [620, 140, 70], [770, 100, 92], [880, 130, 56], [1020, 90, 122],
-  [1120, 110, 66], [1240, 100, 96], [1350, 90, 78],
-];
-/* lit windows: [x, y, primary?] with a few that blink */
-const WINDOWS: [number, number, boolean, boolean][] = [
-  [96, 168, true, false], [104, 182, false, false], [330, 138, true, true],
-  [338, 152, true, false], [668, 152, false, false], [676, 166, true, false],
-  [1002, 122, true, true], [1010, 136, true, false], [1222, 158, false, false],
-  [1230, 172, true, false], [740, 210, true, false], [438, 250, false, true],
-  [1068, 208, true, false], [548, 262, true, false], [906, 268, false, false],
+/** fight-game attribute readout — Power/Speed/Technique, reframed */
+const FIGHT_STATS = [
+  { label: "Frontend", value: 90 },
+  { label: "Backend", value: 80 },
+  { label: "Design", value: 85 },
 ];
 
-const TITLE_LINES = [
-  { text: "EDWIN", indent: "md:ml-[6vw]" },
-  { text: "SATYA YUDISTIRA", indent: "md:ml-[16vw]" },
-];
+/** roster grid — one unlocked fighter, the rest are DLC */
+const ROSTER = ["E", "?", "?", "?", "?", "?", "?", "?"];
 
 /**
- * Boot-in hero: rain-slicked skyline, glitch-in name reveal, neon-sign
- * tagline, runner ID card readout. Plays once the preloader signs off.
+ * GAME_01 — STREET CODER VI. A fighting-game character select screen:
+ * giant nameplate, portrait panel with P1 badge, attribute bars, a
+ * roster grid with one unlocked fighter, and a blinking PRESS START.
  */
 const Hero = () => {
-  const sectionRef = useRef<HTMLElement>(null);
+  const scopeRef = useRef<HTMLDivElement>(null);
+  const years = new Date().getFullYear() - runner.est;
 
   useEffect(() => {
-    let play: (() => void) | undefined;
-    let onMove: ((e: MouseEvent) => void) | undefined;
-    let fallback: ReturnType<typeof setTimeout>;
     const reduced = prefersReducedMotion();
-
     const ctx = gsap.context(() => {
-      const glitchLines = gsap.utils.toArray<HTMLElement>(".hero-glitch");
-      const sign = sectionRef.current?.querySelector(".hero-sign");
-
-      const intro = gsap.timeline({ paused: true });
-      glitchLines.forEach((el, i) => {
-        intro.call(() => el.classList.add("glitched"), [], i * 0.16);
-      });
-      intro.call(() => sign?.classList.add("sign-on"), [], 0.55);
-      intro.fromTo(
-        ".hero-fade",
-        { y: 22, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.8, ease: EASE_OUT, stagger: 0.09 },
-        reduced ? 0 : 0.95
-      );
-
-      play = () => intro.play();
-      window.addEventListener(PRELOADER_DONE_EVENT, play, { once: true });
-      fallback = setTimeout(play, 4600);
-
-      if (!reduced) {
-        // scroll parallax — each layer drifts at its own speed
-        gsap.utils.toArray<HTMLElement>("[data-scroll-speed]").forEach((el) => {
-          gsap.to(el, {
-            y: parseFloat(el.dataset.scrollSpeed!) * 500,
-            ease: "none",
-            scrollTrigger: {
-              trigger: sectionRef.current,
-              start: "top top",
-              end: "bottom top",
-              scrub: true,
-            },
-          });
-        });
-
-        // mouse parallax — x only, scroll owns y
-        if (window.matchMedia("(pointer: fine)").matches) {
-          const layers = gsap.utils.toArray<HTMLElement>("[data-depth]").map((el) => ({
-            depth: parseFloat(el.dataset.depth!),
-            x: gsap.quickTo(el, "x", { duration: 0.9, ease: "power2.out" }),
-          }));
-          onMove = (e: MouseEvent) => {
-            const nx = e.clientX / window.innerWidth - 0.5;
-            layers.forEach((l) => l.x(nx * l.depth * 90));
-          };
-          window.addEventListener("mousemove", onMove);
+      gsap.utils.toArray<HTMLElement>(".statbar-fill[data-level]").forEach((el) => {
+        const level = parseFloat(el.dataset.level ?? "0") / 100;
+        if (reduced) {
+          gsap.set(el, { scaleX: level });
+          return;
         }
-      }
-    }, sectionRef);
-
-    return () => {
-      if (play) window.removeEventListener(PRELOADER_DONE_EVENT, play);
-      if (onMove) window.removeEventListener("mousemove", onMove);
-      clearTimeout(fallback);
-      ctx.revert();
-    };
+        gsap.fromTo(
+          el,
+          { scaleX: 0 },
+          {
+            scaleX: level,
+            duration: 1.1,
+            ease: "power3.out",
+            scrollTrigger: { trigger: el, start: "top 88%" },
+          }
+        );
+      });
+    }, scopeRef);
+    return () => ctx.revert();
   }, []);
 
-  const est = String(runner.est);
-
-  /* night-city scenery — painted under the zone's rain canvas */
-  const backdrop = (
-    <div className="seam-clip pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-      {/* haze glows behind the skyline */}
-      <div
-        data-depth="0.12"
-        className="absolute bottom-[8%] left-[8%] h-64 w-[42%] rounded-full opacity-60 blur-[90px]"
-        style={{ background: "rgba(var(--accent-secondary-rgb),0.14)" }}
-      />
-      <div
-        data-depth="0.18"
-        className="absolute bottom-[4%] right-[4%] h-72 w-[46%] rounded-full opacity-60 blur-[100px]"
-        style={{ background: "rgba(var(--accent-primary-rgb),0.12)" }}
-      />
-
-      {/* skyline — back layer */}
-      <svg
-        data-depth="0.1"
-        data-scroll-speed="0.1"
-        className="absolute bottom-0 left-[-4%] h-[46%] w-[108%]"
-        viewBox="0 0 1440 320"
-        preserveAspectRatio="none"
-      >
-        {BACK_TOWERS.map(([x, w, h]) => (
-          <rect key={`b${x}`} x={x} y={320 - h} width={w} height={h} fill="#0d0d18" />
-        ))}
-        {/* antenna masts */}
-        <rect x="336" y="88" width="2" height="28" fill="#0d0d18" />
-        <rect x="1008" y="78" width="2" height="28" fill="#0d0d18" />
-        <circle cx="337" cy="86" r="2.5" fill="var(--accent-secondary)" opacity="0.8" className="window-blink" />
-        <circle cx="1009" cy="76" r="2.5" fill="var(--accent-primary)" opacity="0.8" className="window-blink" style={{ animationDelay: "2.4s" }} />
-        {WINDOWS.map(([x, y, primary, blinks], i) => (
-          <rect
-            key={`w${x}-${y}`}
-            x={x}
-            y={y}
-            width="4"
-            height="6"
-            fill={primary ? "var(--accent-primary)" : "var(--accent-secondary)"}
-            opacity="0.55"
-            className={blinks ? "window-blink" : undefined}
-            style={blinks ? { animationDelay: `${(i % 5) * 1.3}s` } : undefined}
-          />
-        ))}
-      </svg>
-
-      {/* skyline — front layer */}
-      <svg
-        data-depth="0.22"
-        data-scroll-speed="0.22"
-        className="absolute bottom-0 left-[-4%] h-[30%] w-[108%]"
-        viewBox="0 0 1440 160"
-        preserveAspectRatio="none"
-      >
-        {FRONT_TOWERS.map(([x, w, h]) => (
-          <rect key={`f${x}`} x={x} y={160 - h} width={w} height={h} fill="#060609" />
-        ))}
-      </svg>
-
-      {/* street-level glow line */}
-      <div
-        className="absolute bottom-0 h-px w-full"
-        style={{
-          background: "linear-gradient(90deg, transparent, rgba(var(--accent-primary-rgb),0.5) 30%, rgba(var(--accent-secondary-rgb),0.5) 70%, transparent)",
-          boxShadow: "0 0 24px rgba(var(--accent-primary-rgb),0.25)",
-        }}
-      />
-
-      {/* vertical JP neon sign */}
-      <div data-depth="0.32" className="drift absolute right-[6%] top-[22%] hidden lg:block">
-        <p
-          className="sign-jp text-2xl text-[rgba(var(--accent-secondary-rgb),0.75)]"
-          style={{ textShadow: "0 0 12px rgba(var(--accent-secondary-rgb),0.6), 0 0 40px rgba(var(--accent-secondary-rgb),0.3)" }}
-        >
-          ランナー
-        </p>
-      </div>
-    </div>
-  );
-
   return (
-    <SectionScene
-      zone="hero"
-      id="home"
-      ref={sectionRef}
-      zIndex={60}
-      className="flex min-h-screen flex-col justify-center overflow-hidden"
-      style={{ paddingTop: "5.5rem" }}
-      backdrop={backdrop}
-    >
-      {/* ------- runner ID card ------- */}
-      <div className="hero-fade relative z-10 mx-auto w-full max-w-6xl opacity-0">
-        <div className="tgt inline-block bg-[rgba(10,10,15,0.55)] p-5 backdrop-blur-[2px]">
-          <p className="hud-label mb-3">Runner ID — verified</p>
-          <div className="flex flex-col gap-1.5 font-mono text-[0.64rem] uppercase tracking-[0.18em] text-[var(--muted)]">
-            <p>
-              NAME<span className="mx-2 opacity-40">::</span>
-              <span className="text-[var(--ink)]">{runner.name}</span>
+    <Sector id="hero" zone="hero" zIndex={65} status="[SELECT YOUR FIGHTER]" statusVariant="secondary">
+      <div ref={scopeRef}>
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <h1 className="font-display text-[clamp(2.4rem,6vw,4.6rem)] text-[var(--ink)]">
+            <span data-glitch data-text="CHOOSE YOUR" className="glitch glitch--block">
+              CHOOSE YOUR
+            </span>
+            <span
+              data-glitch
+              data-glitch-delay="0.14"
+              data-text="FIGHTER"
+              className="glitch glitch--block md:ml-[4vw]"
+            >
+              <span className="accent-1">FIGHTER</span>
+            </span>
+          </h1>
+          <p data-reveal className="hud-label hud-label--bare">
+            ROUND 1 <span className="mx-2 opacity-40">{"//"}</span> RANKED MATCH
+          </p>
+        </div>
+
+        <div className="mt-12 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12">
+          {/* ---- nameplate + attributes ---- */}
+          <div className="lg:col-span-7">
+            <p data-reveal className="hud-label mb-4">
+              P1 — Fighter profile
             </p>
-            <p>
-              CLASS<span className="mx-2 opacity-40">::</span>
-              <span className="text-[var(--ink)]">{runner.role}</span>
-            </p>
-            <p>
-              EST<span className="mx-2 opacity-40">::</span>
-              <span className="text-[var(--ink)]">{est}</span>
-              <span className="mx-3 opacity-40">{"//"}</span>LOC
-              <span className="mx-2 opacity-40">::</span>
-              <span className="text-[var(--ink)]">Indonesia</span>
-            </p>
-            <p className="mt-1.5">
-              <span className="tag">
-                <span className="live-dot" />
-                Online
+            <h2 className="font-display text-[clamp(3rem,8.5vw,7rem)] leading-[0.92] text-[var(--ink)]">
+              <span data-glitch data-glitch-delay="0.2" data-text="EDWIN" className="glitch glitch--block">
+                EDWIN
               </span>
+              <span
+                data-glitch
+                data-glitch-delay="0.32"
+                data-text="SATYA YUDISTIRA"
+                className="glitch glitch--block"
+              >
+                SATYA <span className="text-hollow">YUDISTIRA</span>
+              </span>
+            </h2>
+            <p data-reveal className="mt-5 font-display text-[clamp(1.05rem,2.4vw,1.7rem)] tracking-[0.06em] text-[var(--accent-secondary)]">
+              “CODE. CREATE. REIMAGINE.”
             </p>
+            <div data-reveal className="mt-4 flex flex-wrap items-center gap-3">
+              <span className="tag">CLASS: {runner.role}</span>
+              <span className="tag tag--dim">STYLE: PIXEL-PERFECT / SCALABLE</span>
+            </div>
+
+            {/* attribute bars */}
+            <div className="mt-10 max-w-md space-y-5">
+              {FIGHT_STATS.map((s) => (
+                <div key={s.label} data-reveal className="cs-stat">
+                  <div className="mb-2 flex items-baseline justify-between font-mono text-[0.62rem] uppercase tracking-[0.22em]">
+                    <span className="text-[var(--muted)]">{s.label}</span>
+                    <span className="text-[var(--accent-primary)]">{s.value}</span>
+                  </div>
+                  <div className="statbar">
+                    <div className="statbar-fill" data-level={s.value} />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* CTAs */}
+            <div data-reveal className="mt-11 flex flex-wrap items-center gap-4">
+              <a href="#contact" className="btn-game" data-cursor-label="HIRE ME">
+                Press Start — Hire Me
+              </a>
+              <a href="#works" className="btn-game btn-game--ghost" data-cursor-label="WORLDS">
+                View Move List ↓
+              </a>
+            </div>
+          </div>
+
+          {/* ---- portrait + roster ---- */}
+          <div className="lg:col-span-5">
+            <div data-reveal className="cs-portrait aspect-[4/5] w-full">
+              {/* oversized monogram as the "portrait" */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="font-display select-none text-[11rem] leading-none text-transparent [-webkit-text-stroke:2px_rgba(var(--accent-primary-rgb),0.55)] md:text-[13rem]">
+                  E
+                </span>
+              </div>
+              <span className="absolute left-4 top-4 tag tag--2">P1</span>
+              <span className="absolute right-4 top-4 font-mono text-[0.56rem] uppercase tracking-[0.24em] text-[var(--faint)]">
+                EST. {runner.est}
+              </span>
+              {/* record plate */}
+              <div className="absolute inset-x-0 bottom-0 border-t border-[rgba(var(--accent-primary-rgb),0.3)] bg-[rgba(5,6,10,0.82)] px-5 py-4 backdrop-blur-[2px]">
+                <div className="flex items-center justify-between gap-2 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-[var(--muted)]">
+                  <span>
+                    <span className="block text-lg font-display text-[var(--ink)]">{years}+</span>
+                    yrs exp
+                  </span>
+                  <span>
+                    <span className="block text-lg font-display text-[var(--ink)]">10+</span>
+                    projects
+                  </span>
+                  <span>
+                    <span className="block text-lg font-display text-[var(--ink)]">5</span>
+                    teams
+                  </span>
+                  <span className="text-right">
+                    <span className="block text-lg font-display text-[var(--accent-primary)]">W</span>
+                    win streak
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* roster grid */}
+            <div data-reveal className="mt-4">
+              <div className="grid grid-cols-8 gap-2">
+                {ROSTER.map((r, i) => (
+                  <div key={i} className={`roster-slot ${i === 0 ? "roster-slot--active" : ""}`} aria-hidden>
+                    {r}
+                  </div>
+                ))}
+              </div>
+              <p className="mt-3 flex items-center justify-between font-mono text-[0.55rem] uppercase tracking-[0.2em] text-[var(--faint)]">
+                <span>Roster: 1 unlocked</span>
+                <span className="press-start text-[var(--accent-primary)]">Waiting for P2 — you?</span>
+              </p>
+            </div>
           </div>
         </div>
       </div>
-
-      {/* ------- name + neon tagline ------- */}
-      <div data-scroll-speed="-0.28" className="relative z-10 mx-auto mt-10 w-full max-w-6xl md:mt-14">
-        <h1 className="font-display text-[clamp(3.4rem,11vw,9.5rem)] text-[var(--ink)]">
-          {TITLE_LINES.map((line) => (
-            <span key={line.text} className={`block ${line.indent}`}>
-              <span className="hero-glitch glitch opacity-0" data-text={line.text}>
-                {line.text}
-              </span>
-            </span>
-          ))}
-        </h1>
-
-        <p
-          className="hero-sign sign font-display mt-6 text-[clamp(1.15rem,3vw,2.1rem)] text-[var(--accent-secondary)] md:ml-[6vw]"
-          aria-label="Code. Create. Reimagine."
-        >
-          ~ CODE. CREATE. REIMAGINE. ~
-        </p>
-
-        <div className="mt-10 flex flex-wrap items-center gap-4 md:ml-[6vw]">
-          <a href="#works" className="hero-fade btn-neon opacity-0">
-            Jack In ↴
-          </a>
-          <a href="#comm" className="hero-fade btn-neon btn-neon--m opacity-0">
-            Hire Me
-          </a>
-          <span className="hero-fade tag tag--dim opacity-0">[Encrypted Channel]</span>
-        </div>
-      </div>
-
-      {/* ------- bottom HUD cues ------- */}
-      <div className="hero-fade absolute bottom-16 left-1/2 z-10 -translate-x-1/2 opacity-0 md:bottom-20">
-        <div className="flex flex-col items-center gap-2">
-          <span className="hud-label hud-label--bare">Scroll to descend</span>
-          <span
-            className="block h-8 w-px"
-            style={{ background: "linear-gradient(180deg, var(--accent-primary), transparent)" }}
-          />
-        </div>
-      </div>
-      <p className="hero-fade absolute bottom-16 right-6 z-10 hidden font-mono text-[0.56rem] uppercase tracking-[0.24em] text-[var(--faint)] opacity-0 md:right-10 md:block">
-        {runner.role} — EST. {est} — {runner.coords}
-      </p>
-    </SectionScene>
+    </Sector>
   );
 };
 

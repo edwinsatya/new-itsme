@@ -2,9 +2,9 @@ import type { ZoneId } from "@/config/zones";
 
 /**
  * Tiny typed event bus — the ONE source of truth for zone state.
- * WarpDirector derives everything from scroll position and emits here;
- * the warp overlay, the companion, and any future chrome all listen to
- * the same stream, so they can never drift out of sync.
+ * LoadDirector derives everything from scroll position and emits here;
+ * the load overlay, the HUD chrome, and the cursor all listen to the
+ * same stream, so they can never drift out of sync.
  */
 export type ZoneEvents = {
   /** active zone changed without ceremony (initial mount, silent syncs) */
@@ -28,7 +28,7 @@ const handlers: { [K in keyof ZoneEvents]: Set<Handler<K>> } = {
 
 export const zoneBus = {
   /** zone currently on screen — kept current across set/arrive */
-  current: "hero" as ZoneId,
+  current: "home" as ZoneId,
   alert: false,
 
   on<K extends keyof ZoneEvents>(ev: K, fn: Handler<K>): () => void {
