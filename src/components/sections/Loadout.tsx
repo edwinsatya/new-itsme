@@ -2,73 +2,94 @@
 
 import { Code2, Layers, Cpu } from "lucide-react";
 import Sector from "@/components/Sector";
-import GlitchText from "@/components/fx/GlitchText";
 import { services } from "@/constants/profile";
 
-const ICONS = [Code2, Layers, Cpu];
+const SLOT_META = [
+  { icon: Code2, slot: "PRIMARY WEAPON", cls: "AR — PRECISION" },
+  { icon: Layers, slot: "SECONDARY", cls: "SIDEARM — VERSATILE" },
+  { icon: Cpu, slot: "FIELD UPGRADE", cls: "TACTICAL — EXPERIMENTAL" },
+];
 
+/**
+ * GAME_04 — OPERATION: DEPLOY. A shooter's gunsmith/loadout menu:
+ * three equippable service slots, each with its feature list attached
+ * as perk mods. Sharp panels, sliding EQUIPPED banner on hover.
+ */
 const Loadout = () => (
-  <Sector id="loadout" index="03" name="LOADOUT" jp="装備" status="[3 PROGRAMS EQUIPPED]" zone="loadout" zIndex={45}>
-    <h2 className="font-display text-[clamp(2.4rem,6vw,4.8rem)] text-[var(--ink)]">
-      <GlitchText as="span" className="glitch--block" text="EQUIPPED" />
-      <GlitchText as="span" className="glitch--block md:ml-[7vw]" text="PROGRAMS." delay={0.14} />
-    </h2>
+  <Sector id="services" zone="services" zIndex={50} status="[ARMORY OPEN]">
+    <div className="flex flex-wrap items-end justify-between gap-6">
+      <h2 className="font-display text-[clamp(2.6rem,7vw,5.6rem)] text-[var(--ink)]">
+        <span data-glitch data-text="SELECT" className="glitch glitch--block">
+          SELECT
+        </span>
+        <span
+          data-glitch
+          data-glitch-delay="0.14"
+          data-text="LOADOUT"
+          className="glitch glitch--block md:ml-[6vw]"
+        >
+          <span className="accent-1">LOADOUT</span>
+        </span>
+      </h2>
+      <p data-reveal className="hud-label hud-label--bare">
+        CREDITS: ∞ <span className="mx-2 opacity-40">{"//"}</span> ALL SLOTS UNLOCKED
+      </p>
+    </div>
 
-    <div className="mt-16 border-t border-[var(--line)]">
+    <div className="mt-14 grid grid-cols-1 gap-6 lg:grid-cols-3">
       {services.map((service, i) => {
-        const Icon = ICONS[i] ?? Cpu;
+        const meta = SLOT_META[i];
+        const Icon = meta.icon;
         return (
-          <div
+          <article
             key={service.index}
             data-reveal
-            className="group grid grid-cols-1 gap-6 border-b border-[var(--line)] py-12 transition-colors duration-300 md:grid-cols-12 md:gap-8"
+            data-reveal-delay={String(i * 0.1)}
+            className="ops-slot flex flex-col p-7"
+            data-cursor-label="EQUIP"
           >
-            <div className="flex items-start gap-5 md:col-span-1 md:flex-col">
-              <span className="font-mono text-[0.62rem] tracking-[0.24em] text-[var(--faint)]">
+            <span className="ops-equip">Equipped</span>
+
+            <div className="flex items-center justify-between">
+              <p className="font-mono text-[0.56rem] uppercase tracking-[0.26em] text-[var(--accent-primary)]">
+                {meta.slot}
+              </p>
+              <span className="font-display text-2xl text-[rgba(238,242,247,0.16)]">
                 {service.index}
               </span>
-              <span className="radar" data-ping>
-                <span className="radar-ring" aria-hidden />
-                <span className="radar-ring radar-ring--late" aria-hidden />
-                <Icon
-                  size={22}
-                  className="text-[var(--muted)] transition-all duration-300 group-hover:text-[var(--accent-primary)] group-hover:drop-shadow-[0_0_8px_rgba(var(--accent-primary-rgb),0.7)]"
-                  aria-hidden
-                />
-              </span>
             </div>
 
-            <div className="md:col-span-5">
-              <h3 className="font-display text-[clamp(1.5rem,3vw,2.5rem)] leading-none text-[var(--ink)] transition-colors duration-300 group-hover:text-[var(--accent-primary)]">
-                {service.title}
-              </h3>
-              <span className="tag mt-4 hidden md:inline-flex">[EQUIPPED]</span>
+            <div className="mt-6 flex h-16 w-16 items-center justify-center border border-[rgba(var(--accent-primary-rgb),0.35)] bg-[rgba(var(--accent-primary-rgb),0.06)]">
+              <Icon className="h-7 w-7 text-[var(--accent-primary)]" strokeWidth={1.5} />
             </div>
 
-            <div className="md:col-span-6">
-              <p className="mb-6 max-w-xl leading-relaxed text-[var(--muted)]">{service.description}</p>
+            <h3 className="font-display mt-6 text-2xl text-[var(--ink)]">{service.title}</h3>
+            <p className="mt-1 font-mono text-[0.54rem] uppercase tracking-[0.2em] text-[var(--faint)]">
+              {meta.cls}
+            </p>
+            <p className="mt-4 flex-1 text-[0.92rem] leading-relaxed text-[var(--muted)]">
+              {service.description}
+            </p>
+
+            <div className="mt-6 border-t border-[var(--line-soft)] pt-5">
+              <p className="hud-label hud-label--bare mb-3 !text-[0.54rem]">Attached mods</p>
               <div className="flex flex-wrap gap-2">
-                {service.features.map((feature) => (
-                  <span key={feature} className="chip chip--xs">
-                    {feature}
+                {service.features.map((f) => (
+                  <span key={f} className="perk">
+                    {f}
                   </span>
                 ))}
               </div>
             </div>
-          </div>
+          </article>
         );
       })}
     </div>
 
-    <div data-reveal className="mt-16 flex flex-col items-start justify-between gap-8 md:flex-row md:items-center">
-      <p className="max-w-md leading-relaxed text-[var(--muted)]">
-        Need something off-catalogue? Custom programs compiled to spec — tell me
-        about the job.
-      </p>
-      <a href="#comm" className="btn-neon">
-        Request a custom run
-      </a>
-    </div>
+    <p data-reveal className="mt-10 flex items-center gap-2 font-mono text-[0.58rem] uppercase tracking-[0.22em] text-[var(--faint)]">
+      <span className="live-dot text-[var(--accent-primary)]" />
+      Loadouts fully customizable per mission — brief me in the lobby.
+    </p>
   </Sector>
 );
 

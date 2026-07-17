@@ -1,76 +1,100 @@
 "use client";
 
-import { ArrowUp } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useRevealScope } from "@/hooks/useRevealScope";
-import GlitchText from "@/components/fx/GlitchText";
 import SectionScene from "@/components/fx/SectionScene";
 import { runner, socials } from "@/constants/profile";
 
-/** Sign-off: connection terminated, one last flicker, then the city hums on. */
+/**
+ * GAME OVER — the outro. The one section that leans intentionally
+ * retro-arcade: phosphor green, scanlines, a looping CONTINUE countdown,
+ * INSERT COIN blink, and a Play Again warp back to the top.
+ */
 const Outro = () => {
   const scope = useRevealScope<HTMLElement>();
-  const currentYear = new Date().getFullYear();
+  const [count, setCount] = useState(9);
+
+  useEffect(() => {
+    const t = setInterval(() => setCount((c) => (c <= 0 ? 9 : c - 1)), 1000);
+    return () => clearInterval(t);
+  }, []);
 
   return (
-    <SectionScene
-      zone="outro"
-      as="footer"
-      ref={scope}
-      zIndex={30}
-      flat
-      overlap
-      style={{ paddingBottom: "6.5rem" }}
-    >
-      <div className="seam-band" aria-hidden />
+    <SectionScene zone="outro" id="outro" as="footer" ref={scope} zIndex={35} flat overlap>
+      <div className="arcade-scan" aria-hidden />
 
-      <div className="relative z-10 mx-auto flex max-w-6xl flex-col items-center gap-8 text-center">
-        <p data-reveal className="hud-label hud-label--bare">
-          Session terminating…
+      <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center py-16 text-center md:py-24">
+        <p data-reveal className="hud-label hud-label--bare mb-8">
+          FINAL STAGE CLEARED — CREDITS ROLL
         </p>
 
-        <h2 className="font-display text-[clamp(2.8rem,9vw,7.5rem)] leading-[0.92] text-[var(--ink)]">
-          <GlitchText as="span" className="glitch--block" text="CONNECTION" />
-          <GlitchText as="span" className="glitch--block text-[var(--accent-secondary)]" text="TERMINATED." delay={0.16} />
+        <h2
+          data-glitch
+          data-text="GAME OVER"
+          className="glitch arcade-title text-[clamp(3.4rem,12vw,9rem)]"
+        >
+          GAME OVER
         </h2>
 
-        <p className="blink-out font-mono text-[0.68rem] uppercase tracking-[0.24em] text-[var(--muted)]">
-          <span className="mr-2 text-[var(--accent-primary)]">&gt;</span>
-          logging off_ — the city keeps running.
+        <p data-reveal className="arcade-text mt-8 text-[clamp(0.8rem,2vw,1.05rem)]">
+          CONTINUE? <span className="inline-block w-[2ch] text-[var(--accent-secondary)]" suppressHydrationWarning>{count}</span>
         </p>
 
-        <span className="font-jp text-sm text-[var(--faint)]" aria-hidden>
-          切断
-        </span>
+        <div data-reveal className="mt-6 flex items-center gap-3">
+          <span
+            className="coin-pulse inline-block h-5 w-5 rounded-full border-2 border-[var(--accent-secondary)]"
+            style={{ boxShadow: "inset 0 0 0 2px #070907, inset 0 0 0 4px var(--accent-secondary)" }}
+            aria-hidden
+          />
+          <span className="press-start arcade-text text-sm">INSERT COIN TO CONTINUE</span>
+        </div>
 
-        <a href="#comm" className="btn-neon mt-2">
-          Re-open channel
-        </a>
-      </div>
+        {/* high scores */}
+        <div data-reveal className="mt-12 w-full max-w-sm border border-[rgba(var(--accent-primary-rgb),0.25)] bg-[rgba(0,0,0,0.4)] p-5 font-mono text-[0.66rem] uppercase tracking-[0.18em]">
+          <p className="mb-3 text-[var(--accent-secondary)]">— High Scores —</p>
+          <div className="space-y-1.5 text-[var(--muted)]">
+            <p className="flex justify-between">
+              <span>1. YOU (for scrolling this far)</span>
+              <span className="text-[var(--accent-primary)]">999999</span>
+            </p>
+            <p className="flex justify-between">
+              <span>2. E.S.Y</span>
+              <span>654321</span>
+            </p>
+            <p className="flex justify-between opacity-50">
+              <span>3. AAA</span>
+              <span>001337</span>
+            </p>
+          </div>
+        </div>
 
-      <div className="relative z-10 mx-auto mt-20 flex max-w-6xl flex-col items-start justify-between gap-6 border-t border-[var(--line)] pt-8 md:flex-row md:items-center">
-        <p className="font-mono text-[0.6rem] uppercase tracking-[0.22em] text-[var(--faint)]">
-          © {currentYear} {runner.name} — wired with intent
-        </p>
-
-        <div className="flex items-center gap-7">
-          {socials.map((social) => (
-            <a
-              key={social.label}
-              href={social.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="link-neon font-mono text-[0.6rem] uppercase tracking-[0.22em] text-[var(--muted)]"
-            >
-              {social.label}
-            </a>
-          ))}
-          <a
-            href="#home"
-            aria-label="Back to top"
-            className="flex h-10 w-10 items-center justify-center border border-[var(--line)] text-[var(--muted)] transition-all duration-300 hover:border-[rgba(var(--accent-primary-rgb),0.5)] hover:text-[var(--accent-primary)] hover:shadow-[0_0_16px_rgba(var(--accent-primary-rgb),0.2)]"
-          >
-            <ArrowUp size={15} />
+        <div data-reveal className="mt-12 flex flex-wrap items-center justify-center gap-4">
+          <a href="#home" className="btn-game" data-cursor-label="RESTART">
+            ↺ Play Again
           </a>
+          <a href="#contact" className="btn-game btn-game--ghost" data-cursor-label="LOBBY">
+            1UP — Hire Me
+          </a>
+        </div>
+
+        {/* footer strip */}
+        <div data-reveal className="mt-16 w-full border-t border-[var(--line-soft)] pt-8">
+          <div className="flex flex-col items-center justify-between gap-4 font-mono text-[0.56rem] uppercase tracking-[0.2em] text-[var(--faint)] md:flex-row">
+            <span>© {new Date().getFullYear()} {runner.name} — Thanks for playing</span>
+            <span className="flex gap-5">
+              {socials.map((s) => (
+                <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="link-game">
+                  {s.label}
+                </a>
+              ))}
+              <a href={`mailto:${runner.email}`} className="link-game">
+                Email
+              </a>
+            </span>
+          </div>
+          <p className="mt-4 text-center font-mono text-[0.5rem] uppercase tracking-[0.3em] text-[rgba(238,242,247,0.18)]">
+            EDWIN.SYS v5.0 — built with Next.js · no cartridges were harmed
+          </p>
         </div>
       </div>
     </SectionScene>

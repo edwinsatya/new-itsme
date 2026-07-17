@@ -30,7 +30,7 @@ type SectionSceneProps = {
  *   1. scopes the `--accent-*` custom props so all UI inside re-themes
  *   2. paints the district's own deep-tinted fill behind the diagonal seam
  *   3. mounts the zone's ambient canvas backdrop
- * WarpDirector finds these via `data-zone` to drive jumps + the companion.
+ * LoadDirector finds these via `data-zone` to drive cartridge loads.
  */
 const SectionScene = ({
   zone,
