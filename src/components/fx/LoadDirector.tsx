@@ -7,26 +7,25 @@ import { zoneBus } from "@/lib/zoneBus";
 
 /** how close (in viewport heights) to a seam before chrome pre-alerts */
 const ALERT_BAND = 0.38;
-/** ms window that collapses boundary crossings during a fast fling */
-const COALESCE_MS = 90;
+/** ms window that collapses boundary crossings during a fast fling —
+    touch momentum can cross several seams quickly, so this debounce plus
+    the mid-flight guard below keeps the ceremony from re-firing */
+const COALESCE_MS = 120;
 
 /**
  * The console's disc drive. Watches scroll against every `[data-zone]`
- * seam and, on a real boundary crossing, plays one ~600ms cartridge-load:
- * two angled shutter panels snap closed, a genre-authentic loading screen
- * (VS flash / save gem / start lights / matchmaking spinner…) plays with
- * a quick progress fill, the world swaps beneath, and the shutters split
- * open on the new game. The same tick drives zoneBus, so the HUD chrome
- * never drifts out of sync.
+ * seam and, on a real boundary crossing, sweeps a skewed COLOR BLADE in
+ * the incoming game's own gradient across the screen (direction follows
+ * the scroll), carrying a genre loading readout — a bold color shift,
+ * never a brightness flash. The world swaps while covered. The same tick
+ * drives zoneBus, so the HUD chrome never drifts out of sync.
  *
- * prefers-reduced-motion: the load becomes a same-duration plain dark cut
- * (no panels, no icons, no progress theatre).
+ * prefers-reduced-motion: the load becomes a brief plain dark cut.
  */
 const LoadDirector = () => {
   const overlayRef = useRef<HTMLDivElement>(null);
   const veilRef = useRef<HTMLDivElement>(null);
-  const topRef = useRef<HTMLDivElement>(null);
-  const btmRef = useRef<HTMLDivElement>(null);
+  const bladeRef = useRef<HTMLDivElement>(null);
   const coreRef = useRef<HTMLDivElement>(null);
   const kickerRef = useRef<HTMLParagraphElement>(null);
   const titleRef = useRef<HTMLParagraphElement>(null);
@@ -36,14 +35,13 @@ const LoadDirector = () => {
   useEffect(() => {
     const overlay = overlayRef.current;
     const veil = veilRef.current;
-    const top = topRef.current;
-    const btm = btmRef.current;
+    const blade = bladeRef.current;
     const core = coreRef.current;
     const kicker = kickerRef.current;
     const title = titleRef.current;
     const bar = barRef.current;
     const pct = pctRef.current;
-    if (!overlay || !veil || !top || !btm || !core || !kicker || !title || !bar || !pct) return;
+    if (!overlay || !veil || !blade || !core || !kicker || !title || !bar || !pct) return;
     const reduced = prefersReducedMotion();
 
     let zonesInDoc: ZoneId[] = [];
@@ -79,10 +77,20 @@ const LoadDirector = () => {
       return Math.min(i, Math.max(zonesInDoc.length - 1, 0));
     };
 
-    /* ---------------- the cartridge load itself ---------------- */
+    /* ---------------- the cartridge swap itself ---------------- */
 
-    const buildLoad = (fromId: ZoneId, toId: ZoneId) => {
+    const buildLoad = (fromId: ZoneId, toId: ZoneId, dir: 1 | -1) => {
       const to = ZONES[toId];
+
+      // mid-flight guard: if a sweep is already playing (fast fling across
+      // several seams), don't restart the ceremony — swap the world quietly
+      // and let the running overlay finish.
+      if (tl?.isActive()) {
+        setLive(toId);
+        zoneBus.emit("jump", { from: fromId, to: toId });
+        zoneBus.emit("arrive", { zone: toId });
+        return;
+      }
       tl?.kill();
       tl = gsap.timeline({
         onComplete: () => {
@@ -93,8 +101,8 @@ const LoadDirector = () => {
       tl.set(overlay, { autoAlpha: 1 }, 0);
 
       if (reduced) {
-        // plain cut: brief dark dip, state swaps mid-dip, nothing flashes
-        tl.fromTo(veil, { opacity: 0 }, { opacity: 0.92, duration: 0.12, ease: "power1.in" }, 0);
+        // plain cut: brief dark dip, state swaps mid-dip, nothing sweeps
+        tl.fromTo(veil, { opacity: 0 }, { opacity: 0.85, duration: 0.12, ease: "power1.in" }, 0);
         tl.call(
           () => {
             setLive(toId);
@@ -108,15 +116,15 @@ const LoadDirector = () => {
         return;
       }
 
-      // dress the loading screen for the incoming game
-      // (accent var lives on the overlay so the shutter edges inherit it too)
+      // dress the blade + readout for the incoming game
       core.dataset.loader = to.loader.kind;
-      overlay.style.setProperty("--load-accent", to.primary);
-      kicker.textContent = to.loader.kicker;
+      overlay.style.setProperty("--load-a", to.primary);
+      overlay.style.setProperty("--load-b", to.secondary);
+      kicker.textContent =
+        toId === "home"
+          ? `RETURNING TO ${to.loader.kicker}`
+          : `INSERTING CARTRIDGE — ${to.loader.kicker}`;
       title.textContent = to.game;
-      const tint = `linear-gradient(180deg, rgba(${to.primaryRgb},0.06), rgba(4,5,8,0) 45%), #0a0b10`;
-      top.style.background = tint;
-      btm.style.background = tint;
 
       // restart the icon's CSS animation (nodes keep their classes)
       core.querySelectorAll<HTMLElement>(".load-ic *").forEach((el) => {
@@ -125,10 +133,13 @@ const LoadDirector = () => {
         el.style.animation = "";
       });
 
-      // ---- shutters close ----
-      tl.fromTo(veil, { opacity: 0 }, { opacity: 0.75, duration: 0.1, ease: "power2.in" }, 0);
-      tl.fromTo(top, { yPercent: -104 }, { yPercent: 0, duration: 0.16, ease: "power3.in" }, 0);
-      tl.fromTo(btm, { yPercent: 104 }, { yPercent: 0, duration: 0.16, ease: "power3.in" }, 0);
+      // ---- the color blade sweeps in (direction follows the scroll) ----
+      tl.fromTo(
+        blade,
+        { xPercent: -145 * dir },
+        { xPercent: 0, duration: 0.3, ease: "power3.in" },
+        0
+      );
 
       // ---- covered: the world swaps here ----
       tl.call(
@@ -137,38 +148,36 @@ const LoadDirector = () => {
           zoneBus.emit("jump", { from: fromId, to: toId });
         },
         [],
-        0.17
+        0.28
       );
 
-      // ---- loading screen beat ----
+      // ---- loading readout rides the blade ----
       tl.fromTo(
         core,
-        { opacity: 0, y: 10 },
-        { opacity: 1, y: 0, duration: 0.12, ease: "power2.out" },
-        0.14
+        { opacity: 0, y: 16 },
+        { opacity: 1, y: 0, duration: 0.16, ease: "power2.out" },
+        0.22
       );
       const prog = { v: 0 };
-      tl.fromTo(bar, { scaleX: 0 }, { scaleX: 1, duration: 0.3, ease: "power1.inOut" }, 0.17);
+      tl.fromTo(bar, { scaleX: 0 }, { scaleX: 1, duration: 0.32, ease: "power1.inOut" }, 0.28);
       tl.to(
         prog,
         {
           v: 100,
-          duration: 0.3,
+          duration: 0.32,
           ease: "power1.inOut",
           onUpdate: () => {
             pct.textContent = `${Math.round(prog.v)}%`;
           },
         },
-        0.17
+        0.28
       );
 
-      // ---- shutters open onto the new game ----
-      tl.to(core, { opacity: 0, y: -8, duration: 0.09, ease: "power1.in" }, 0.5);
-      tl.to(top, { yPercent: -104, duration: 0.2, ease: "power3.inOut" }, 0.55);
-      tl.to(btm, { yPercent: 104, duration: 0.2, ease: "power3.inOut" }, 0.55);
-      tl.to(veil, { opacity: 0, duration: 0.18, ease: "power2.out" }, 0.56);
+      // ---- blade sweeps out, revealing the new game's palette ----
+      tl.to(core, { opacity: 0, y: -12, duration: 0.1, ease: "power1.in" }, 0.62);
+      tl.to(blade, { xPercent: 145 * dir, duration: 0.32, ease: "power3.out" }, 0.66);
 
-      tl.call(() => zoneBus.emit("arrive", { zone: toId }), [], 0.62);
+      tl.call(() => zoneBus.emit("arrive", { zone: toId }), [], 0.9);
     };
 
     const scheduleLoad = (from: number, to: number) => {
@@ -180,7 +189,7 @@ const LoadDirector = () => {
         const f = warpFrom ?? pendingTo;
         warpFrom = null;
         if (f === pendingTo) return; // scrolled there and back within the window
-        buildLoad(zonesInDoc[f], zonesInDoc[pendingTo]);
+        buildLoad(zonesInDoc[f], zonesInDoc[pendingTo], pendingTo > f ? 1 : -1);
       }, COALESCE_MS);
     };
 
@@ -239,8 +248,7 @@ const LoadDirector = () => {
   return (
     <div ref={overlayRef} className="load-overlay" aria-hidden>
       <div ref={veilRef} className="load-veil" />
-      <div ref={topRef} className="load-panel load-panel--top" />
-      <div ref={btmRef} className="load-panel load-panel--btm" />
+      <div ref={bladeRef} className="load-blade" />
       <div ref={coreRef} className="load-core" data-loader="sys">
         {/* one icon per genre — CSS shows only the incoming game's */}
         <div className="load-ic load-ic--sys"><i /><i /><i /><i /></div>

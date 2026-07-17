@@ -5,31 +5,31 @@ import { ZONES, zoneCssVars, type ZoneId } from "@/config/zones";
 import SectionBackground from "@/components/fx/SectionBackground";
 
 type SectionSceneProps = {
-  /** which district of the city this scene renders (src/config/zones.ts) */
+  /** which game cartridge this scene renders (src/config/zones.ts) */
   zone: ZoneId;
   as?: "section" | "footer";
   id?: string;
   className?: string;
   style?: CSSProperties;
   zIndex?: number;
-  /** tucks this scene under the previous one's diagonal seam */
+  /** tucks this scene under the previous one's angled seam */
   overlap?: boolean;
-  /** last scene: no diagonal cut at the bottom */
+  /** last scene: no angled cut at the bottom */
   flat?: boolean;
   /** switch off the ambient canvas (rare) */
   animate?: boolean;
-  /** extra scenery painted between the fill and the canvas (hero skyline) */
+  /** extra scenery painted between the fill and the canvas (parallax layers) */
   backdrop?: ReactNode;
   ref?: Ref<HTMLElement>;
   children: ReactNode;
 };
 
 /**
- * The zone shell every section lives in — one system, seven parameter sets.
+ * The zone shell every section lives in — one system, eight games.
  * From a single config entry it:
- *   1. scopes the `--accent-*` custom props so all UI inside re-themes
- *   2. paints the district's own deep-tinted fill behind the diagonal seam
- *   3. mounts the zone's ambient canvas backdrop
+ *   1. scopes the accent + full light/dark scheme tokens (`data-scheme`)
+ *   2. paints the game's own fill (sky blue, white circuit, royal blue…)
+ *   3. mounts the game's animated scene canvas
  * LoadDirector finds these via `data-zone` to drive cartridge loads.
  */
 const SectionScene = ({
@@ -50,10 +50,12 @@ const SectionScene = ({
     id={id}
     ref={ref}
     data-zone={zone}
+    data-scheme={ZONES[zone].scheme}
     className={`sector ${flat ? "sector--flat" : ""} ${className}`}
     style={{
       zIndex,
       marginTop: overlap ? "-4rem" : undefined,
+      color: "var(--ink)",
       ...zoneCssVars(zone),
       ...style,
     }}

@@ -39,10 +39,10 @@ const isLocked = (p: (typeof projects)[number]) => !p.live && !p.github;
 const PATH_D = NODES.map(([x, y], i) => `${i === 0 ? "M" : "L"} ${x} ${y}`).join(" ");
 
 /**
- * GAME_03 — SUPER SHIPPED WORLD. A platformer world map: 10 shipped
- * projects as level nodes on a dotted course. Selecting a node opens
- * its level card — thumbnail, description, collectible tech tags, and
- * a PLAY LEVEL link. Levels without a public build show as locked.
+ * GAME_03 — SUPER SHIPPED WORLD. The brightest screen on the console:
+ * a sunny sky-blue overworld with parallax hills and clouds, 10 shipped
+ * projects as level nodes on a dotted course. Selecting a node opens its
+ * level card. Levels without a public build show as locked.
  */
 const Works = () => {
   const [selectedId, setSelectedId] = useState(projects[projects.length - 1].id);
@@ -50,8 +50,49 @@ const Works = () => {
   const locked = isLocked(selected);
   const cleared = projects.filter((p) => !isLocked(p)).length;
 
+  /* sunny-day scenery: sun + two hill ranges at different scroll speeds */
+  const backdrop = (
+    <div className="seam-clip pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+      <div className="sun" data-scroll-speed="0.05" />
+      <svg
+        data-scroll-speed="0.08"
+        className="absolute bottom-[-4%] left-[-5%] h-[36%] w-[110%]"
+        viewBox="0 0 1440 260"
+        preserveAspectRatio="none"
+      >
+        <path
+          d="M0 260 L0 150 Q 180 62 360 140 T 720 128 T 1080 150 T 1440 118 L1440 260 Z"
+          fill="#a5e3b8"
+          opacity="0.8"
+        />
+      </svg>
+      <svg
+        data-scroll-speed="0.16"
+        className="absolute bottom-[-5%] left-[-5%] h-[27%] w-[110%]"
+        viewBox="0 0 1440 200"
+        preserveAspectRatio="none"
+      >
+        <path
+          d="M0 200 L0 120 Q 240 38 480 108 T 960 98 T 1440 108 L1440 200 Z"
+          fill="#5fca82"
+        />
+        {/* little course bushes */}
+        <circle cx="220" cy="118" r="16" fill="#4bb56e" />
+        <circle cx="246" cy="122" r="12" fill="#4bb56e" />
+        <circle cx="1120" cy="108" r="15" fill="#4bb56e" />
+      </svg>
+    </div>
+  );
+
   return (
-    <Sector id="works" zone="works" zIndex={55} status={`[${cleared}/${projects.length} CLEARED]`}>
+    <Sector
+      id="works"
+      zone="works"
+      zIndex={55}
+      status={`[${cleared}/${projects.length} CLEARED]`}
+      statusVariant="secondary"
+      backdrop={backdrop}
+    >
       <div className="flex flex-wrap items-end justify-between gap-6">
         <h2 className="font-display text-[clamp(2.6rem,7vw,5.6rem)] text-[var(--ink)]">
           <span data-glitch data-text="WORLD 1" className="glitch glitch--block">
@@ -80,20 +121,25 @@ const Works = () => {
           aria-hidden
         >
           {/* course shadow + dotted trail */}
-          <path d={PATH_D} stroke="rgba(0,0,0,0.5)" strokeWidth="7" strokeLinejoin="round" opacity="0.5" />
+          <path
+            d={PATH_D}
+            stroke="rgba(255,255,255,0.85)"
+            strokeWidth="8"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
           <path
             d={PATH_D}
             className="map-path"
-            stroke="rgba(var(--accent-primary-rgb),0.55)"
-            strokeWidth="3"
+            stroke="rgba(var(--accent-primary-rgb),0.9)"
+            strokeWidth="3.5"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
-          {/* start + goal markers */}
-          <text x="30" y="392" fill="rgba(var(--accent-primary-rgb),0.8)" fontSize="13" fontFamily="monospace">
+          <text x="26" y="392" fill="var(--accent-primary)" fontSize="13" fontFamily="monospace" fontWeight="600">
             START
           </text>
-          <text x="130" y="60" fill="rgba(var(--accent-secondary-rgb),0.9)" fontSize="13" fontFamily="monospace">
+          <text x="128" y="60" fill="var(--accent-secondary)" fontSize="13" fontFamily="monospace" fontWeight="600">
             GOAL ★
           </text>
         </svg>
@@ -119,7 +165,7 @@ const Works = () => {
               >
                 <span className="lvl-num">{i + 1}</span>
                 {lock ? (
-                  <span className="lvl-clear" aria-hidden>
+                  <span className="lvl-clear" style={{ color: "rgba(18,48,71,0.6)" }} aria-hidden>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M17 9V7a5 5 0 0 0-10 0v2H5v13h14V9h-2Zm-8-2a3 3 0 0 1 6 0v2H9V7Z" />
                     </svg>
@@ -165,24 +211,28 @@ const Works = () => {
 
       {/* ---- level card ---- */}
       <div data-reveal className="mt-8">
-        <div key={selected.id} className="panel lvl-panel-in grid grid-cols-1 gap-0 md:grid-cols-12">
+        <div
+          key={selected.id}
+          data-tilt="2.5"
+          className="panel lvl-panel-in grid grid-cols-1 gap-0 md:grid-cols-12"
+        >
           <div className="relative md:col-span-5">
-            <div className="relative aspect-video h-full w-full overflow-hidden bg-[#05070a] md:aspect-auto">
+            <div className="relative aspect-video h-full w-full overflow-hidden bg-[#dff0fb] md:aspect-auto">
               <Image
                 src={selected.image}
                 alt={selected.title}
                 fill
                 sizes="(max-width: 768px) 100vw, 40vw"
-                className={`object-cover ${locked ? "opacity-30 grayscale" : ""}`}
+                className={`object-cover ${locked ? "opacity-40 grayscale" : ""}`}
               />
               {locked && (
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="tag tag--dim">🔒 PRIVATE BUILD</span>
+                  <span className="tag tag--dim bg-[rgba(255,255,255,0.8)]">🔒 PRIVATE BUILD</span>
                 </div>
               )}
             </div>
             {!locked && (
-              <span className="absolute left-4 top-4 rotate-[-6deg] border-2 border-[var(--accent-secondary)] px-3 py-1 font-display text-sm tracking-[0.14em] text-[var(--accent-secondary)]">
+              <span className="absolute left-4 top-4 rotate-[-6deg] border-2 border-[var(--accent-secondary)] bg-[rgba(255,255,255,0.85)] px-3 py-1 font-display text-sm tracking-[0.14em] text-[var(--accent-secondary)]">
                 CLEARED ★
               </span>
             )}
@@ -194,7 +244,7 @@ const Works = () => {
                 <p className="hud-label">
                   LEVEL {projects.findIndex((p) => p.id === selected.id) + 1}-{selected.id}
                 </p>
-                <span className={locked ? "tag tag--dim" : "tag"}>
+                <span className={locked ? "tag tag--dim" : "tag tag--2"}>
                   {locked ? "[LOCKED]" : "[CLEARED]"}
                 </span>
               </div>
@@ -204,7 +254,6 @@ const Works = () => {
               <p className="mt-3 max-w-xl text-[0.95rem] leading-relaxed text-[var(--muted)]">
                 {selected.description.replace(/^\/\/\.\.\.\s*/, "").replace(/;$/, ".")}
               </p>
-              {/* collectible tech tags */}
               <div className="mt-5 flex flex-wrap gap-2">
                 {selected.tech.map((t) => (
                   <span key={t} className="chip chip--xs">

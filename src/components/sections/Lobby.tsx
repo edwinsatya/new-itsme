@@ -66,7 +66,18 @@ const Lobby = () => {
   };
 
   return (
-    <Sector id="contact" zone="contact" zIndex={40} status="[1/2 PLAYERS]" statusVariant="secondary">
+    <Sector
+      id="contact"
+      zone="contact"
+      zIndex={40}
+      status="[1/2 PLAYERS]"
+      statusVariant="secondary"
+      backdrop={
+        <div className="seam-clip pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+          <div className="hue-drift" />
+        </div>
+      }
+    >
       <div className="flex flex-wrap items-end justify-between gap-6">
         <h2 className="font-display text-[clamp(2.6rem,7vw,5.6rem)] text-[var(--ink)]">
           <span data-glitch data-text="JOIN THE" className="glitch glitch--block">
@@ -89,9 +100,9 @@ const Lobby = () => {
 
       <div className="mt-16 grid grid-cols-1 gap-10 lg:grid-cols-2">
         {/* ---- the lobby ---- */}
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col">
           {/* P1 card */}
-          <div data-reveal className="pcard">
+          <div data-reveal data-tilt="2.5" className="pcard">
             <div className="pcard-banner" />
             <div className="flex flex-wrap items-center justify-between gap-4 p-6">
               <div className="flex items-center gap-4">
@@ -119,8 +130,11 @@ const Lobby = () => {
             </div>
           </div>
 
+          {/* connection line P1 → P2 */}
+          <div className="p2-link" aria-hidden />
+
           {/* P2 empty slot */}
-          <div data-reveal className="pcard pcard--empty">
+          <div data-reveal data-tilt="2.5" className="pcard pcard--empty">
             <div className="flex flex-wrap items-center justify-between gap-4 p-6">
               <div className="flex items-center gap-4">
                 <div className="flex h-14 w-14 items-center justify-center border border-dashed border-[rgba(238,242,247,0.25)] font-mono text-lg text-[var(--faint)]">
@@ -140,7 +154,7 @@ const Lobby = () => {
           </div>
 
           {/* comms */}
-          <div data-reveal className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div data-reveal className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="panel p-6">
               <p className="hud-label mb-3">Direct DM</p>
               <a

@@ -24,10 +24,10 @@ const RARITY: Record<string, Rarity> = {
 };
 
 const RARITY_LABEL: { tier: Rarity; color: string; label: string }[] = [
-  { tier: "legendary", color: "rgb(226,177,85)", label: "Legendary" },
-  { tier: "epic", color: "rgb(168,85,247)", label: "Epic" },
-  { tier: "rare", color: "rgb(77,141,255)", label: "Rare" },
-  { tier: "common", color: "rgb(148,155,168)", label: "Common" },
+  { tier: "legendary", color: "rgb(176,127,30)", label: "Legendary" },
+  { tier: "epic", color: "rgb(147,68,220)", label: "Epic" },
+  { tier: "rare", color: "rgb(58,110,220)", label: "Rare" },
+  { tier: "common", color: "rgb(110,118,130)", label: "Common" },
 ];
 
 /** stat block — the run so far */
@@ -94,12 +94,12 @@ const Profile = () => {
         <div className="mt-14 grid grid-cols-1 gap-8 lg:grid-cols-12">
           {/* ---- bio + stats ---- */}
           <div className="space-y-8 lg:col-span-5">
-            <div data-reveal className="rpg-panel">
+            <div data-reveal data-tilt="2.5" className="rpg-panel">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-4">
                   <div
                     className="slot-glyph !h-12 !w-12"
-                    style={{ "--rarity": "226, 177, 85" } as React.CSSProperties}
+                    style={{ "--rarity": "176, 127, 30" } as React.CSSProperties}
                   >
                     <span className="!text-base">E</span>
                   </div>
@@ -134,7 +134,7 @@ const Profile = () => {
               </div>
             </div>
 
-            <div data-reveal className="rpg-panel">
+            <div data-reveal data-tilt="2.5" className="rpg-panel">
               <p className="hud-label mb-5">Stat block</p>
               <div className="space-y-4">
                 {STATS.map((s) => (
@@ -160,7 +160,7 @@ const Profile = () => {
 
           {/* ---- equipment grid ---- */}
           <div className="lg:col-span-7">
-            <div data-reveal className="rpg-panel h-full">
+            <div data-reveal data-tilt="2" className="rpg-panel h-full">
               <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
                 <p className="hud-label">Equipment — tech arsenal</p>
                 <span className="tag tag--2">{skills.length}/12 SLOTS</span>
@@ -179,8 +179,8 @@ const Profile = () => {
                   );
                 })}
                 {/* one empty slot — always learning */}
-                <div className="slot opacity-60" style={{ borderStyle: "dashed" }}>
-                  <span className="slot-name text-[var(--faint)]">
+                <div className="slot opacity-70" style={{ borderStyle: "dashed" }}>
+                  <span className="slot-name">
                     EMPTY SLOT
                     <br />
                     (always learning)

@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { useRevealScope } from "@/hooks/useRevealScope";
 import SectionScene from "@/components/fx/SectionScene";
+import GenreGlyph from "@/components/fx/GenreGlyph";
 import { ZONES, type ZoneId } from "@/config/zones";
 
 type SectorProps = {
@@ -13,9 +14,11 @@ type SectorProps = {
   flat?: boolean;
   /** tucks this sector under the previous one's angled seam */
   overlap?: boolean;
-  /** which game cartridge this sector is (drives title, genre, palette) */
+  /** which game cartridge this sector is (drives banner, palette) */
   zone: ZoneId;
   zIndex?: number;
+  /** scenery painted between the fill and the canvas (parallax layers) */
+  backdrop?: ReactNode;
   children: ReactNode;
 };
 
@@ -26,10 +29,10 @@ const TAG_VARIANT = {
 } as const;
 
 /**
- * Shared "game screen" shell: SectionScene (game accents + fill + ambient
- * canvas) plus a boot band on entry and the cartridge title bar — GAME_XX,
- * title, and a genre chip so every section answers "which game is this?"
- * within the header row. Wires the reveal grammar for everything inside.
+ * Shared "game screen" shell: SectionScene (game palette + scheme + scene
+ * canvas) plus a boot band on entry and the CARTRIDGE BANNER — a colored
+ * game label with glyph, index, title, and genre, worn in the game's own
+ * gradient. Wires reveal grammar + depth layers for everything inside.
  */
 const Sector = ({
   id,
@@ -39,6 +42,7 @@ const Sector = ({
   overlap = true,
   zone,
   zIndex = 10,
+  backdrop,
   children,
 }: SectorProps) => {
   const scope = useRevealScope<HTMLElement>();
@@ -52,21 +56,21 @@ const Sector = ({
       zIndex={zIndex}
       flat={flat}
       overlap={overlap}
+      backdrop={backdrop}
     >
       <div className="seam-band" aria-hidden />
 
       <div className="relative z-10 mx-auto max-w-6xl">
-        <div data-reveal className="mb-5 flex flex-wrap items-center justify-between gap-3">
-          <p className="hud-label">
-            GAME_{game.index} <span className="mx-1 opacity-50">{"//"}</span> {game.game}
-          </p>
-          <div className="flex items-center gap-3">
-            <span className="tag tag--dim">{game.genre}</span>
-            {status && <span className={TAG_VARIANT[statusVariant]}>{status}</span>}
+        <div data-reveal className="mb-12 flex flex-wrap items-center justify-between gap-3">
+          <div className="cart-banner">
+            <span className="cart-banner-glyph">
+              <GenreGlyph zone={zone} size={20} />
+            </span>
+            <span className="cart-banner-index">GAME_{game.index}</span>
+            <span className="cart-banner-title">{game.game}</span>
+            <span className="cart-banner-genre">{game.genre}</span>
           </div>
-        </div>
-        <div data-reveal>
-          <div data-ping className="divider wipe-x mb-14" />
+          {status && <span className={TAG_VARIANT[statusVariant]}>{status}</span>}
         </div>
         {children}
       </div>

@@ -1,7 +1,6 @@
 import SmoothScroll from "@/components/SmoothScroll";
 import Preloader from "@/components/Preloader";
 import Cursor from "@/components/Cursor";
-import ScreenFX from "@/components/ScreenFX";
 import ScrollProgress from "@/components/ScrollProgress";
 import HUDFrame from "@/components/HUDFrame";
 import LoadDirector from "@/components/fx/LoadDirector";
@@ -21,7 +20,6 @@ export default function Home() {
       <ScrollProgress />
       <Preloader />
       <Cursor />
-      <ScreenFX />
       <HUDFrame />
       {/* the console library — LoadDirector plays a cartridge-load between zones */}
       <div id="zone-stage">
