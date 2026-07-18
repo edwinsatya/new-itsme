@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { gsap, prefersReducedMotion } from "@/lib/gsap";
 import Sector from "@/components/Sector";
+import TechIcon from "@/components/fx/TechIcon";
 import { runner } from "@/constants/profile";
 import { skills } from "@/constants/skills";
 
@@ -171,9 +172,15 @@ const Profile = () => {
                   const tier = RARITY[skill] ?? "common";
                   return (
                     <div key={skill} className={`slot slot--${tier}`} data-cursor-label={tier.toUpperCase()}>
-                      <div className="slot-glyph">
-                        <span>{skill.slice(0, 2).toUpperCase()}</span>
-                      </div>
+                      <span
+                        className="flex items-center justify-center"
+                        style={{
+                          color: "rgb(var(--rarity))",
+                          filter: "drop-shadow(0 0 9px rgba(var(--rarity), 0.5))",
+                        }}
+                      >
+                        <TechIcon name={skill} size={30} />
+                      </span>
                       <span className="slot-name">{skill}</span>
                     </div>
                   );

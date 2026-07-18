@@ -945,15 +945,27 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0;
+  cursor: pointer;
   border: 1px solid var(--line);
   background: rgba(var(--ink-rgb), 0.03);
   font-family: var(--font-mono), monospace;
-  font-size: 0.85rem;
-  color: var(--faint);
-  transition: border-color 0.2s steps(2, end), background 0.2s;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  transition: border-color 0.2s steps(2, end), background 0.2s, transform 0.15s var(--ease-menu);
 }
 .roster-slot:hover {
-  border-color: rgba(var(--accent-primary-rgb), 0.5);
+  border-color: rgba(var(--accent-primary-rgb), 0.6);
+  color: var(--ink);
+  transform: translateY(-2px);
+}
+.roster-slot--locked {
+  color: var(--faint);
+  background: rgba(0, 0, 0, 0.25);
+}
+.roster-slot--locked:hover {
+  animation: lock-shake 0.3s steps(2, end);
 }
 .roster-slot--active {
   border-color: var(--accent-primary);
@@ -971,6 +983,44 @@ body {
   padding: 1px 4px;
   background: var(--accent-primary);
   color: #05060a;
+}
+
+/* fighter swap — the portrait slams over to the picked fighter */
+.fighter-swap {
+  animation: fighter-swap 0.38s var(--ease-menu);
+}
+@keyframes fighter-swap {
+  0% {
+    opacity: 0;
+    transform: scale(1.14) translateX(16px);
+    filter: brightness(1.6);
+  }
+  55% {
+    opacity: 1;
+    filter: brightness(1.15);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+/* Tekken-style name banner: bold italic slab with a hard accent shadow */
+.fighter-name {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 700;
+  font-style: italic;
+  text-transform: uppercase;
+  font-size: clamp(1.5rem, 3.2vw, 2.2rem);
+  line-height: 1;
+  letter-spacing: 0.03em;
+  color: var(--ink);
+  transform: skewX(-6deg);
+  transform-origin: left bottom;
+  text-shadow:
+    3px 3px 0 rgba(var(--accent-primary-rgb), 0.65),
+    0 0 26px rgba(var(--accent-primary-rgb), 0.3);
 }
 
 /* round-timer ring — spinning arc, like the select-screen countdown */
