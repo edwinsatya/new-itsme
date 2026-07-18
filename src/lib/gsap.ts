@@ -1,18 +1,21 @@
+"use client";
+
+import { useEffect, useLayoutEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger);
+
+// dev-only handles for driving/inspecting animations from the console
+if (typeof window !== "undefined" && process.env.NODE_ENV !== "production") {
+  (window as unknown as Record<string, unknown>).__gsap = gsap;
+  (window as unknown as Record<string, unknown>).__ST = ScrollTrigger;
 }
 
+/** useLayoutEffect on the client, useEffect during SSR (avoids the warning). */
+export const useIsomorphicLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
+
+export const EASE_OUT = "power3.out";
+
 export { gsap, ScrollTrigger };
-
-export const EASE_OUT = "power4.out";
-export const EASE_IN_OUT = "power3.inOut";
-
-/** Fired by the Preloader when its exit cut completes. */
-export const PRELOADER_DONE_EVENT = "preloader:done";
-
-export const prefersReducedMotion = () =>
-  typeof window !== "undefined" &&
-  window.matchMedia("(prefers-reduced-motion: reduce)").matches;

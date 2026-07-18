@@ -1,38 +1,59 @@
-import SmoothScroll from "@/components/SmoothScroll";
-import Preloader from "@/components/Preloader";
+import Capabilities from "@/components/Capabilities";
+import Contact from "@/components/Contact";
 import Cursor from "@/components/Cursor";
-import ScrollProgress from "@/components/ScrollProgress";
-import HUDFrame from "@/components/HUDFrame";
-import LoadDirector from "@/components/fx/LoadDirector";
-import ConsoleHome from "@/components/sections/ConsoleHome";
-import Hero from "@/components/sections/Hero";
-import Profile from "@/components/sections/Profile";
-import Works from "@/components/sections/Works";
-import Loadout from "@/components/sections/Loadout";
-import Journey from "@/components/sections/Journey";
-import Lobby from "@/components/sections/Lobby";
-import Outro from "@/components/sections/Outro";
+import Experience from "@/components/Experience";
+import FAQ from "@/components/FAQ";
+import FeaturedProjects from "@/components/FeaturedProjects";
+import Footer from "@/components/Footer";
+import Header from "@/components/Header";
+import Hero from "@/components/Hero";
+import Interactions from "@/components/Interactions";
+import IntroFold from "@/components/IntroFold";
+import Loader from "@/components/Loader";
+import Manifesto from "@/components/Manifesto";
+import Portal from "@/components/Portal";
+import ProjectIndex from "@/components/ProjectIndex";
+import Services from "@/components/Services";
+import Stack from "@/components/Stack";
+import { featuredProjects, hero, intro, portal } from "@/data/content";
+import { resolveMedia } from "@/lib/media";
 
-export default function Home() {
+export default function Page() {
+  // media slots are checked on the server so missing files never 404 —
+  // components render their designed fallbacks instead
+  const heroVideo = resolveMedia(hero.video);
+  const portalImage = resolveMedia(portal.image);
+  const portraitImage = resolveMedia(intro.portrait);
+  const projects = featuredProjects.map((project) => ({
+    ...project,
+    resolvedImage: resolveMedia(project.image),
+  }));
+  const manifestoMedia = {
+    magloft: resolveMedia("/media/proj-magloft.jpg"),
+    happyfarm: resolveMedia("/media/proj-happyfarm.jpg"),
+  };
+
   return (
-    <main className="min-h-screen">
-      <SmoothScroll />
-      <ScrollProgress />
-      <Preloader />
+    <>
+      <Loader />
       <Cursor />
-      <HUDFrame />
-      {/* the console library — LoadDirector plays a cartridge-load between zones */}
-      <div id="zone-stage">
-        <ConsoleHome />
-        <Hero />
-        <Profile />
-        <Works />
-        <Loadout />
-        <Journey />
-        <Lobby />
-        <Outro />
-      </div>
-      <LoadDirector />
-    </main>
+      <Interactions />
+      <Header />
+      <main>
+        <Hero hasVideo={!!heroVideo} />
+        <Portal image={portalImage} />
+        <IntroFold portrait={portraitImage} />
+        <Manifesto media={manifestoMedia} />
+        <FeaturedProjects projects={projects} />
+        <ProjectIndex />
+        <Services />
+        <Capabilities />
+        <Experience />
+        <Stack />
+        <FAQ />
+        <Contact />
+      </main>
+      <Footer />
+    </>
   );
 }

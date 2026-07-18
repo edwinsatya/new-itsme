@@ -1,15 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <!-- night-city plate with a clipped corner -->
-  <path d="M0 0H64V52L52 64H0Z" fill="#0a0a0f"/>
-  <!-- neon seam along the cut -->
-  <path d="M51.2 62.8L62.8 51.2" stroke="#ff2e88" stroke-width="2.4" stroke-linecap="square"/>
-  <!-- targeting bracket, top-left -->
-  <path d="M6 6H17V8.5H8.5V17H6Z" fill="#00e5ff"/>
-  <!-- glitched E: RGB-split ghosts under the ink glyph -->
-  <path d="M20 14H46V20H28V29H42V35H28V44H46V50H20Z" fill="#00e5ff" opacity="0.85" transform="translate(-2.6 1.8)"/>
-  <path d="M20 14H46V20H28V29H42V35H28V44H46V50H20Z" fill="#ff2e88" opacity="0.85" transform="translate(2.6 -1.8)"/>
-  <path d="M20 14H46V20H28V29H42V35H28V44H46V50H20Z" fill="#e8eef5"/>
-  <!-- slice-glitch shear across the stem -->
-  <rect x="16" y="37.2" width="34" height="2.8" fill="#0a0a0f"/>
-  <rect x="24" y="37.2" width="8" height="2.8" fill="#e8eef5"/>
+  <rect width="64" height="64" rx="14" fill="#0b0b0d"/>
+  <text x="10" y="45" font-family="Georgia, 'Times New Roman', serif" font-size="34" fill="#f2efe8">E</text>
+  <text x="26" y="47" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="40" fill="#c8ff2e">/</text>
+  <text x="36" y="45" font-family="Georgia, 'Times New Roman', serif" font-size="34" fill="#f2efe8">S</text>
 </svg>

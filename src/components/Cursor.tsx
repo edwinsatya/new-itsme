@@ -1,130 +1,90 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 import { gsap } from "@/lib/gsap";
-import { zoneBus } from "@/lib/zoneBus";
-import type { ZoneId } from "@/config/zones";
 
-/** which cursor glyph each game uses — the optional per-genre polish layer */
-const VARIANT: Partial<Record<ZoneId, string>> = {
-  services: "reticle", // FPS: crosshair
-  works: "dpad", // platformer: d-pad
-};
+const INTERACTIVE =
+  "a, button, [data-cursor], input, textarea, select, summary, [role='button']";
+
+const SIZE = 18;
+const SIZE_HOVER = 54;
+
+const CAPABLE_QUERY =
+  "(pointer: fine) and (prefers-reduced-motion: no-preference)";
+
+function subscribeCapability(callback: () => void) {
+  const mq = window.matchMedia(CAPABLE_QUERY);
+  mq.addEventListener("change", callback);
+  return () => mq.removeEventListener("change", callback);
+}
 
 /**
- * Custom cursor tinted by the live game (via --live-accent) that swaps
- * glyphs per genre: ring by default, a crosshair reticle in the FPS
- * loadout, a d-pad in the platformer map. Snaps larger over interactive
- * elements; shows a mono label over anything carrying data-cursor-label.
+ * Custom circular cursor with mix-blend difference, fine pointers only.
+ * The native cursor stays; this ring trails it and swells over interactives.
  */
-const Cursor = () => {
-  const retRef = useRef<HTMLDivElement>(null);
-  const labelRef = useRef<HTMLDivElement>(null);
+export default function Cursor() {
+  const ref = useRef<HTMLDivElement>(null);
+  const active = useSyncExternalStore(
+    subscribeCapability,
+    () => window.matchMedia(CAPABLE_QUERY).matches,
+    () => false
+  );
 
   useEffect(() => {
-    if (window.matchMedia("(pointer: coarse)").matches) return;
+    const el = ref.current;
+    if (!active || !el) return;
 
-    document.body.classList.add("custom-cursor-active");
+    gsap.set(el, { xPercent: -50, yPercent: -50, autoAlpha: 0 });
+    const xTo = gsap.quickTo(el, "x", { duration: 0.18, ease: "power3.out" });
+    const yTo = gsap.quickTo(el, "y", { duration: 0.18, ease: "power3.out" });
+    let shown = false;
 
-    const ret = retRef.current!;
-    const label = labelRef.current!;
-
-    gsap.set(ret, { xPercent: -50, yPercent: -50, opacity: 0 });
-    gsap.set(label, { opacity: 0 });
-
-    const retX = gsap.quickTo(ret, "x", { duration: 0.13, ease: "power3.out" });
-    const retY = gsap.quickTo(ret, "y", { duration: 0.13, ease: "power3.out" });
-    const lbX = gsap.quickTo(label, "x", { duration: 0.2, ease: "power3.out" });
-    const lbY = gsap.quickTo(label, "y", { duration: 0.2, ease: "power3.out" });
-
-    let hot = false;
-
-    const onMove = (e: MouseEvent) => {
-      gsap.to(ret, { opacity: 1, duration: 0.25, overwrite: "auto" });
-      retX(e.clientX);
-      retY(e.clientY);
-      lbX(e.clientX + 20);
-      lbY(e.clientY + 22);
-    };
-
-    const onOver = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      const interactive = target.closest("a, button, input, textarea, [role='link'], [data-cursor]");
-      const labelled = target.closest<HTMLElement>("[data-cursor-label]");
-
-      if (!!interactive !== hot) {
-        hot = !!interactive;
-        gsap.to(ret, {
-          scale: hot ? 1.4 : 1,
-          rotation: hot ? 45 : 0,
-          duration: 0.3,
-          ease: "power3.out",
-          overwrite: "auto",
-        });
+    const onMove = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse") return;
+      if (!shown) {
+        shown = true;
+        gsap.set(el, { x: e.clientX, y: e.clientY });
+        gsap.to(el, { autoAlpha: 1, duration: 0.25 });
       }
-
-      if (labelled) {
-        label.textContent = labelled.dataset.cursorLabel || "SELECT";
-        gsap.to(label, { opacity: 1, duration: 0.2, overwrite: "auto" });
-      } else {
-        gsap.to(label, { opacity: 0, duration: 0.2, overwrite: "auto" });
+      xTo(e.clientX);
+      yTo(e.clientY);
+    };
+    const onOver = (e: PointerEvent) => {
+      if ((e.target as Element | null)?.closest?.(INTERACTIVE)) {
+        gsap.to(el, { width: SIZE_HOVER, height: SIZE_HOVER, duration: 0.28, ease: "power3.out" });
       }
     };
-
-    const onLeave = () => {
-      gsap.to([ret, label], { opacity: 0, duration: 0.3, overwrite: "auto" });
+    const onOut = (e: PointerEvent) => {
+      if ((e.target as Element | null)?.closest?.(INTERACTIVE)) {
+        gsap.to(el, { width: SIZE, height: SIZE, duration: 0.28, ease: "power3.out" });
+      }
+    };
+    const onLeaveWindow = () => {
+      shown = false;
+      gsap.to(el, { autoAlpha: 0, duration: 0.2 });
     };
 
-    // glyph follows the live game
-    const applyZone = (zone: ZoneId) => {
-      ret.dataset.variant = VARIANT[zone] ?? "default";
-    };
-    applyZone(zoneBus.current);
-    const offSet = zoneBus.on("set", ({ zone }) => applyZone(zone));
-    const offJump = zoneBus.on("jump", ({ to }) => applyZone(to));
-
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseover", onOver);
-    document.documentElement.addEventListener("mouseleave", onLeave);
+    document.addEventListener("pointermove", onMove, { passive: true });
+    document.addEventListener("pointerover", onOver, { passive: true });
+    document.addEventListener("pointerout", onOut, { passive: true });
+    document.documentElement.addEventListener("mouseleave", onLeaveWindow);
 
     return () => {
-      document.body.classList.remove("custom-cursor-active");
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mouseover", onOver);
-      document.documentElement.removeEventListener("mouseleave", onLeave);
-      offSet();
-      offJump();
+      document.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerover", onOver);
+      document.removeEventListener("pointerout", onOut);
+      document.documentElement.removeEventListener("mouseleave", onLeaveWindow);
     };
-  }, []);
+  }, [active]);
+
+  if (!active) return null;
 
   return (
-    <>
-      <div ref={retRef} className="cursor-ret" data-variant="default">
-        {/* default — console ring + dot */}
-        <svg className="cur-default" width="30" height="30" viewBox="0 0 30 30" fill="none" stroke="currentColor" strokeWidth="1.2">
-          <circle cx="15" cy="15" r="9" opacity="0.85" />
-          <circle cx="15" cy="15" r="1.8" fill="currentColor" stroke="none" />
-        </svg>
-        {/* FPS — crosshair reticle */}
-        <svg className="cur-reticle" width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="currentColor" strokeWidth="1.1">
-          <circle cx="18" cy="18" r="10" opacity="0.5" />
-          <line x1="18" y1="2" x2="18" y2="10" />
-          <line x1="18" y1="26" x2="18" y2="34" />
-          <line x1="2" y1="18" x2="10" y2="18" />
-          <line x1="26" y1="18" x2="34" y2="18" />
-          <circle cx="18" cy="18" r="1.6" fill="currentColor" stroke="none" />
-        </svg>
-        {/* platformer — d-pad */}
-        <svg className="cur-dpad" width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.2">
-          <path d="M12 4h8v8h8v8h-8v8h-8v-8H4v-8h8z" opacity="0.9" />
-          <circle cx="16" cy="16" r="1.6" fill="currentColor" stroke="none" />
-        </svg>
-      </div>
-      <div ref={labelRef} className="cursor-label">
-        SELECT
-      </div>
-    </>
+    <div
+      ref={ref}
+      aria-hidden="true"
+      className="pointer-events-none fixed left-0 top-0 z-[9990] rounded-full border-[1.5px] border-white opacity-0 mix-blend-difference"
+      style={{ width: SIZE, height: SIZE }}
+    />
   );
-};
-
-export default Cursor;
+}
