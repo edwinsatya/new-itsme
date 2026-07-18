@@ -109,6 +109,8 @@ const ConsoleHome = () => {
                 role="listitem"
                 className="gtile home-tile group opacity-0"
                 data-cursor-label="BOOT"
+                aria-label={`${g.plain} — ${g.game}`}
+                title={g.plain}
                 style={
                   {
                     "--tile-rgb": g.primaryRgb,
@@ -128,8 +130,9 @@ const ConsoleHome = () => {
                     {g.genre}
                   </p>
                   <p className="font-display mt-1 text-[0.95rem] leading-tight text-[var(--ink)]">{g.game}</p>
-                  <p className="mt-1 font-mono text-[0.52rem] uppercase tracking-[0.12em] text-[var(--faint)]">
-                    {g.blurb}
+                  {/* plain-language line so non-gamers can navigate the shelf */}
+                  <p className="mt-1 font-mono text-[0.52rem] uppercase tracking-[0.12em] text-[rgba(238,242,247,0.55)]">
+                    {g.plain}
                   </p>
                 </div>
                 <div className="gtile-boot">

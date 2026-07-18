@@ -61,16 +61,20 @@ const Sector = ({
       <div className="seam-band" aria-hidden />
 
       <div className="relative z-10 mx-auto max-w-6xl">
-        <div data-reveal className="mb-12 flex flex-wrap items-center justify-between gap-3">
-          <div className="cart-banner">
-            <span className="cart-banner-glyph">
-              <GenreGlyph zone={zone} size={20} />
-            </span>
-            <span className="cart-banner-index">GAME_{game.index}</span>
-            <span className="cart-banner-title">{game.game}</span>
-            <span className="cart-banner-genre">{game.genre}</span>
+        <div data-reveal className="mb-12">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="cart-banner">
+              <span className="cart-banner-glyph">
+                <GenreGlyph zone={zone} size={20} />
+              </span>
+              <span className="cart-banner-index">GAME_{game.index}</span>
+              <span className="cart-banner-title">{game.game}</span>
+              <span className="cart-banner-genre">{game.genre}</span>
+            </div>
+            {status && <span className={TAG_VARIANT[statusVariant]}>{status}</span>}
           </div>
-          {status && <span className={TAG_VARIANT[statusVariant]}>{status}</span>}
+          {/* the translation for non-gamers — small, muted, always present */}
+          <p className="cart-plain">↳ {game.plain}</p>
         </div>
         {children}
       </div>

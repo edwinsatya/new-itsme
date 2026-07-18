@@ -20,11 +20,20 @@ const Outro = () => {
   }, []);
 
   return (
-    <SectionScene zone="outro" id="outro" as="footer" ref={scope} zIndex={35} flat overlap>
+    <SectionScene
+      zone="outro"
+      id="outro"
+      as="footer"
+      ref={scope}
+      zIndex={35}
+      flat
+      overlap
+      style={{ paddingTop: "5rem", paddingBottom: "2.5rem" }}
+    >
       <div className="arcade-scan" aria-hidden />
       <div className="arcade-vignette" aria-hidden />
 
-      <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center py-16 text-center md:py-24">
+      <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center text-center">
         <p data-reveal className="hud-label hud-label--bare mb-8">
           FINAL STAGE CLEARED — CREDITS ROLL
         </p>
@@ -36,6 +45,10 @@ const Outro = () => {
         >
           GAME OVER
         </h2>
+        {/* plain-language translation for non-gamers */}
+        <p data-reveal className="mt-4 font-mono text-[0.62rem] uppercase tracking-[0.2em] text-[var(--muted)]">
+          ↳ Thanks for visiting — let&apos;s work together
+        </p>
 
         <p data-reveal className="arcade-text mt-8 text-[clamp(0.8rem,2vw,1.05rem)]">
           CONTINUE? <span className="inline-block w-[2ch] text-[var(--accent-secondary)]" suppressHydrationWarning>{count}</span>
@@ -71,17 +84,17 @@ const Outro = () => {
           </div>
         </div>
 
-        <div data-reveal className="mt-12 flex flex-wrap items-center justify-center gap-4">
-          <a href="#home" className="btn-game" data-cursor-label="RESTART">
+        <div data-reveal className="mt-10 flex flex-wrap items-center justify-center gap-4">
+          <a href="#home" className="btn-game" data-cursor-label="RESTART" aria-label="Back to top">
             ↺ Play Again
           </a>
-          <a href="#contact" className="btn-game btn-game--ghost" data-cursor-label="LOBBY">
+          <a href="#contact" className="btn-game btn-game--ghost" data-cursor-label="CONTACT" aria-label="Contact me">
             1UP — Hire Me
           </a>
         </div>
 
         {/* footer strip */}
-        <div data-reveal className="mt-16 w-full border-t border-[var(--line-soft)] pt-8">
+        <div data-reveal className="mt-12 w-full border-t border-[var(--line-soft)] pt-7">
           <div className="flex flex-col items-center justify-between gap-4 font-mono text-[0.56rem] uppercase tracking-[0.2em] text-[var(--faint)] md:flex-row">
             <span>© {new Date().getFullYear()} {runner.name} — Thanks for playing</span>
             <span className="flex gap-5">

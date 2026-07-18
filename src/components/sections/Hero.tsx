@@ -121,11 +121,11 @@ const Hero = () => {
 
             {/* CTAs */}
             <div data-reveal className="mt-11 flex flex-wrap items-center gap-4">
-              <a href="#contact" className="btn-game" data-cursor-label="HIRE ME">
+              <a href="#contact" className="btn-game" data-cursor-label="HIRE ME" aria-label="Contact me">
                 Press Start — Hire Me
               </a>
-              <a href="#works" className="btn-game btn-game--ghost" data-cursor-label="WORLDS">
-                View Move List ↓
+              <a href="#works" className="btn-game btn-game--ghost" data-cursor-label="PROJECTS" aria-label="View my projects">
+                View My Projects ↓
               </a>
             </div>
           </div>

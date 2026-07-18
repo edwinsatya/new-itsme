@@ -262,6 +262,7 @@ const Lobby = () => {
             disabled={status === "loading"}
             className="btn-game w-full disabled:cursor-not-allowed disabled:opacity-50"
             data-cursor-label="SEND"
+            aria-label="Send message"
           >
             {status === "loading" ? "Connecting…" : "✓ Ready Up — Send Invite"}
           </button>

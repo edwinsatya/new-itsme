@@ -256,10 +256,9 @@ const Journey = () => {
 
           <div data-reveal className="panel flex flex-col justify-between gap-6 p-7 lg:col-span-5">
             <div>
-              <p className="hud-label mb-3">Career stats</p>
+              <p className="hud-label mb-3">Resume</p>
               <p className="text-[0.92rem] leading-relaxed text-[var(--muted)]">
-                Full telemetry — every season, every finish, every lap time. Grab the complete
-                record sheet.
+                Want the full record? Every role, skill, and certification in one document.
               </p>
             </div>
             <a
@@ -267,10 +266,11 @@ const Journey = () => {
               target="_blank"
               rel="noopener noreferrer"
               className="btn-game w-fit"
-              data-cursor-label="CV"
+              data-cursor-label="RESUME"
+              aria-label="Download my resume (CV)"
             >
               <Download className="h-3.5 w-3.5" strokeWidth={2} />
-              Download Career Stats
+              Download Resume (CV)
             </a>
           </div>
         </div>

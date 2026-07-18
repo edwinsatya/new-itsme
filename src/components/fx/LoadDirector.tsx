@@ -202,6 +202,9 @@ const LoadDirector = () => {
 
     const tick = (scrollY: number, silent = false) => {
       if (!zonesInDoc.length) return;
+      // scroll is hard-locked (boot gate / menu): the body is fixed and
+      // scrollY reads 0 — ignore it or we'd fire a phantom zone change
+      if (document.documentElement.classList.contains("lenis-stopped")) return;
       const focus = scrollY + window.innerHeight * 0.5;
 
       let near = false;
