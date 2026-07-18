@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { gsap } from "@/lib/gsap";
+import { lockScroll, unlockScroll } from "@/lib/scrollLock";
 import { runner } from "@/constants/profile";
 import { GAME_ORDER, ZONES, type ZoneId } from "@/config/zones";
 import GenreGlyph from "@/components/fx/GenreGlyph";
@@ -37,17 +38,16 @@ const HUDFrame = () => {
   }, []);
 
   useEffect(() => {
-    if (menuOpen) {
-      document.documentElement.classList.add("lenis-stopped");
-      gsap.fromTo(
-        ".lib-card",
-        { y: 24, opacity: 0, scale: 0.94 },
-        { y: 0, opacity: 1, scale: 1, duration: 0.4, stagger: 0.05, ease: "power3.out" }
-      );
-    } else {
-      document.documentElement.classList.remove("lenis-stopped");
-    }
-    return () => document.documentElement.classList.remove("lenis-stopped");
+    if (!menuOpen) return;
+    // hard lock (body-fixed) — Lenis and iOS touch both ignore plain
+    // overflow:hidden; position is preserved so open/close never jumps
+    lockScroll();
+    gsap.fromTo(
+      ".lib-card",
+      { y: 24, opacity: 0, scale: 0.94 },
+      { y: 0, opacity: 1, scale: 1, duration: 0.4, stagger: 0.05, ease: "power3.out" }
+    );
+    return unlockScroll;
   }, [menuOpen]);
 
   const nowPlaying = ZONES[playing];
@@ -81,6 +81,8 @@ const HUDFrame = () => {
                   } as React.CSSProperties
                 }
                 aria-current={active ? "true" : undefined}
+                aria-label={z.plain}
+                title={z.plain}
               >
                 <i aria-hidden />
                 {item.label}
@@ -89,7 +91,7 @@ const HUDFrame = () => {
           })}
         </div>
 
-        <a href="#contact" className="dock-cta hidden sm:inline-flex">
+        <a href="#contact" className="dock-cta hidden sm:inline-flex" aria-label="Contact me" title="Contact me">
           ▶ Press Start
         </a>
 
@@ -120,7 +122,16 @@ const HUDFrame = () => {
                   <a
                     key={id}
                     href={`#${id}`}
-                    onClick={() => setMenuOpen(false)}
+                    onClick={(e) => {
+                      // navigate AFTER the scroll lock releases — while the
+                      // body is fixed the page has no height to scroll
+                      e.preventDefault();
+                      setMenuOpen(false);
+                      window.setTimeout(() => {
+                        document.getElementById(id)?.scrollIntoView();
+                        history.replaceState(null, "", `#${id}`);
+                      }, 80);
+                    }}
                     className="lib-card"
                     style={{
                       background: `radial-gradient(120% 100% at 20% 0%, rgba(${z.primaryRgb},0.5), transparent 55%), linear-gradient(150deg, rgba(${z.secondaryRgb},0.35), rgba(9,10,18,0.95) 70%)`,
@@ -133,6 +144,9 @@ const HUDFrame = () => {
                       {z.genre}
                     </span>
                     <span className="lib-card-title">{z.game}</span>
+                    <span className="font-mono text-[0.55rem] uppercase tracking-[0.12em] text-[rgba(255,255,255,0.72)]">
+                      {z.plain}
+                    </span>
                   </a>
                 );
               })}

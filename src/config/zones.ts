@@ -61,6 +61,8 @@ export interface Zone {
   };
   /** one-line blurb on the console home tile */
   blurb: string;
+  /** plain-language translation for non-gamers (subtitles, aria-labels) */
+  plain: string;
 }
 
 export const ZONES: Record<ZoneId, Zone> = {
@@ -77,6 +79,7 @@ export const ZONES: Record<ZoneId, Zone> = {
     bg: "radial-gradient(130% 90% at 50% 0%, #0c1020 0%, #090b16 48%, #06070d 100%)",
     loader: { kind: "sys", kicker: "SYSTEM MENU" },
     blurb: "Home screen",
+    plain: "Home",
   },
   hero: {
     id: "hero",
@@ -91,6 +94,7 @@ export const ZONES: Record<ZoneId, Zone> = {
     bg: "radial-gradient(120% 90% at 50% 100%, #331110 0%, #1d0b0d 52%, #100709 100%)",
     loader: { kind: "vs", kicker: "ENTERING TOURNAMENT" },
     blurb: "Character select — meet Player 1",
+    plain: "About me — introduction",
   },
   profile: {
     id: "profile",
@@ -105,6 +109,7 @@ export const ZONES: Record<ZoneId, Zone> = {
     bg: "linear-gradient(170deg, #1d2b63 0%, #16204d 48%, #0e142f 100%)",
     loader: { kind: "save", kicker: "OPENING SAVE FILE" },
     blurb: "Character sheet, stats & equipped gear",
+    plain: "Skills & experience summary",
   },
   works: {
     id: "works",
@@ -121,6 +126,7 @@ export const ZONES: Record<ZoneId, Zone> = {
     bg: "linear-gradient(180deg, #6cc4f7 0%, #a4dcfb 48%, #dbf1fe 100%)",
     loader: { kind: "level", kicker: "WORLD MAP" },
     blurb: "10 cleared levels — the shipped projects",
+    plain: "Portfolio — my projects",
   },
   services: {
     id: "services",
@@ -135,6 +141,7 @@ export const ZONES: Record<ZoneId, Zone> = {
     bg: "linear-gradient(160deg, #191c1e 0%, #121415 55%, #0c0e0f 100%)",
     loader: { kind: "ops", kicker: "PREPARING LOADOUT" },
     blurb: "Pick a loadout — what I can build for you",
+    plain: "Services I offer",
   },
   journey: {
     id: "journey",
@@ -151,6 +158,7 @@ export const ZONES: Record<ZoneId, Zone> = {
     bg: "linear-gradient(180deg, #f6f8fb 0%, #eaeef4 52%, #dbe2ea 100%)",
     loader: { kind: "race", kicker: "STARTING GRID" },
     blurb: "Career mode — 5 seasons on track",
+    plain: "Work experience timeline",
   },
   contact: {
     id: "contact",
@@ -165,6 +173,7 @@ export const ZONES: Record<ZoneId, Zone> = {
     bg: "linear-gradient(150deg, #2b50e0 0%, #5f3bec 48%, #8f2ddb 100%)",
     loader: { kind: "match", kicker: "SEARCHING FOR MATCH" },
     blurb: "Join the lobby — let's play together",
+    plain: "Contact me",
   },
   outro: {
     id: "outro",
@@ -179,6 +188,7 @@ export const ZONES: Record<ZoneId, Zone> = {
     bg: "linear-gradient(180deg, #1c1033 0%, #130a24 45%, #05030a 100%)",
     loader: { kind: "coin", kicker: "CONTINUE?" },
     blurb: "Insert coin to continue",
+    plain: "Thanks for visiting — let's work together",
   },
 };
 
